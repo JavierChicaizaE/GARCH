@@ -14,7 +14,7 @@ const YEAR_TICKS = [0, 52, 104, 156, 208];
 const YEAR_LABELS = ["2019", "2020", "2021", "2022", "2023"];
 const chartData = RETURNS.map((v, i) => ({ i, v }));
 
-const TEAM = ["Didier Guamanarca", "Tamay Katherine", "Eduardo Chicaiza"];
+const TEAM = ["Chicaiza Eduardo", "Navarrete Marlon", "Pineda Fabricio", "Soria Samanta", "Tapia Alex"];
 
 const OIL_ANNUAL = [
   { year: 2007, prod: 511.1 }, { year: 2008, prod: 504.8 }, { year: 2009, prod: 486.1 },
