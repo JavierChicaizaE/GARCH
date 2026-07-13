@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine,
 } from "recharts";
-import { ArrowLeft, ArrowRight, Sun, Moon, Menu, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sun, Moon, Menu, X, Database, PlayCircle } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Data — extracted verbatim from Modelo_GARCH.pptx                  */
@@ -14,7 +14,49 @@ const YEAR_TICKS = [0, 52, 104, 156, 208];
 const YEAR_LABELS = ["2019", "2020", "2021", "2022", "2023"];
 const chartData = RETURNS.map((v, i) => ({ i, v }));
 
-const TEAM = ["Chicaiza Eduardo", "Navarrete Marlon", "Pineda Fabricio", "Soria Samanta", "Tapia Alex"];
+const TEAM = ["Didier Guamanarca", "Tamay Katherine", "Eduardo Chicaiza"];
+
+const OIL_ANNUAL = [
+  { year: 2007, prod: 511.1 }, { year: 2008, prod: 504.8 }, { year: 2009, prod: 486.1 },
+  { year: 2010, prod: 485.2 }, { year: 2011, prod: 500.4 }, { year: 2012, prod: 503.6 },
+  { year: 2013, prod: 526.2 }, { year: 2014, prod: 556.3 }, { year: 2015, prod: 543.2 },
+  { year: 2016, prod: 548.4 }, { year: 2017, prod: 531.3 }, { year: 2018, prod: 517.2 },
+  { year: 2019, prod: 531.1 }, { year: 2020, prod: 479.2 }, { year: 2021, prod: 473.3 },
+  { year: 2022, prod: 480.8 }, { year: 2023, prod: 475.1 }, { year: 2024, prod: 475.3 },
+  { year: 2025, prod: 441.2 }, { year: 2026, prod: 459.8 },
+];
+
+const OIL_SHOCKS = [
+  { period: "Agosto 2025", ret: 1.154, from: 147.5, to: 468.1 },
+  { period: "Julio 2025", ret: -1.152, from: 467.1, to: 147.5 },
+  { period: "Abril 2020", ret: -0.946, from: 540.7, to: 209.9 },
+  { period: "Diciembre 2021", ret: -0.677, from: 484.9, to: 246.3 },
+  { period: "Enero 2022", ret: 0.616, from: 246.3, to: 456.0 },
+];
+
+const GARCH_FIT = {
+  observations: 232,
+  archLm: 55.6707,
+  archP: 0.000000,
+  postP: 0.908068,
+  logLikelihood: 178.566,
+  aic: -349.132,
+  bic: -335.345,
+  mu: -0.005023,
+  omega: 0.000368,
+  alpha: 0.0334,
+  beta: 0.9535,
+  persistence: 0.9869,
+};
+
+const FORECAST_2027 = [
+  { month: "Ene", vol: 0.254240 }, { month: "Feb", vol: 0.253297 },
+  { month: "Mar", vol: 0.252363 }, { month: "Abr", vol: 0.251439 },
+  { month: "May", vol: 0.250522 }, { month: "Jun", vol: 0.249615 },
+  { month: "Jul", vol: 0.248716 }, { month: "Ago", vol: 0.247826 },
+  { month: "Sep", vol: 0.246944 }, { month: "Oct", vol: 0.246071 },
+  { month: "Nov", vol: 0.245206 }, { month: "Dic", vol: 0.244349 },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Nav structure — grouped outline for the sidebar                   */
@@ -85,7 +127,7 @@ function Eq({ children, note }) {
 }
 
 function PageFoot({ page }) {
-  return <div className="page-foot">Grupo 10 · {page}⁄09</div>;
+  return <div className="page-foot">Grupo 10 · {page}⁄{String(TOTAL).padStart(2, "0")}</div>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -352,6 +394,150 @@ function SlideAplicaciones() {
   );
 }
 
+function PracticalLab({ onClose }) {
+  const steps = [
+    { tag: "01", title: "Cargar datos", code: "pd.read_excel('produccion petroleo mensual 2007.xlsx')", result: "233 meses cargados: enero 2007 - mayo 2026." },
+    { tag: "02", title: "Calcular retornos", code: "retornos = np.log(prod).diff().dropna()", result: "232 retornos logarítmicos listos para modelar." },
+    { tag: "03", title: "Diagnóstico ARCH-LM", code: "het_arch(retornos, nlags=12)", result: `ARCH-LM = ${GARCH_FIT.archLm.toFixed(2)}; p-valor = 0.000000.` },
+    { tag: "04", title: "Estimar GARCH(1,1)", code: "arch_model(retornos, vol='GARCH', p=1, q=1).fit()", result: `α₁ = ${GARCH_FIT.alpha.toFixed(4)}, β₁ = ${GARCH_FIT.beta.toFixed(4)}, persistencia = ${GARCH_FIT.persistence.toFixed(4)}.` },
+    { tag: "05", title: "Pronosticar 2027", code: "forecast(horizon=12)", result: "La volatilidad baja de 0.2542 a 0.2443 si no hay nuevos choques." },
+  ];
+  const [step, setStep] = useState(0);
+  const [running, setRunning] = useState(false);
+
+  useEffect(() => {
+    if (!running) return undefined;
+    if (step >= steps.length - 1) {
+      setRunning(false);
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setStep((s) => s + 1), 900);
+    return () => window.clearTimeout(timer);
+  }, [running, step, steps.length]);
+
+  const run = () => {
+    setStep(0);
+    setRunning(true);
+  };
+
+  const visibleForecast = FORECAST_2027.slice(0, step >= 4 ? FORECAST_2027.length : 3);
+  const params = [
+    ["μ", GARCH_FIT.mu.toFixed(6), "retorno medio"],
+    ["ω", GARCH_FIT.omega.toFixed(6), "varianza base"],
+    ["α₁", GARCH_FIT.alpha.toFixed(4), "choque corto plazo"],
+    ["β₁", GARCH_FIT.beta.toFixed(4), "memoria"],
+  ];
+
+  return (
+    <section className="lab-overlay" aria-label="Caso practico dinamico">
+      <div className="lab-shell">
+        <div className="lab-head">
+          <div>
+            <div className="brand-kicker">CASO PRÁCTICO</div>
+            <h2>Producción de petróleo Ecuador: ejecución GARCH</h2>
+            <p>Recorre el flujo del notebook: datos, retornos, prueba ARCH, estimación GARCH(1,1) y pronóstico.</p>
+          </div>
+          <button className="icon-btn" onClick={onClose} aria-label="Cerrar caso práctico"><X size={17} /></button>
+        </div>
+
+        <div className="lab-grid">
+          <div className="lab-panel lab-runner">
+            <div className="source-card">
+              <Database size={16} />
+              <div><strong>Datos usados</strong><span>produccion petroleo mensual 2007.xlsx</span></div>
+            </div>
+            <div className="source-card">
+              <PlayCircle size={16} />
+              <div><strong>Notebook</strong><span>MODELO_GARCH.ipynb</span></div>
+            </div>
+            <button className="run-btn" onClick={run} disabled={running}>
+              <PlayCircle size={16} />
+              <span>{running ? "Ejecutando..." : "Ejecutar modelo"}</span>
+            </button>
+            <div className="lab-steps">
+              {steps.map((s, i) => (
+                <button key={s.tag} className={"lab-step" + (i <= step ? " done" : "") + (i === step ? " active" : "")} onClick={() => { setRunning(false); setStep(i); }}>
+                  <span>{s.tag}</span>
+                  <strong>{s.title}</strong>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="lab-panel lab-console">
+            <div className="console-top">
+              <span>{steps[step].title}</span>
+              <em>{running ? "running" : "ready"}</em>
+            </div>
+            <pre>{steps.slice(0, step + 1).map((s) => `# ${s.title}\n${s.code}\n=> ${s.result}`).join("\n\n")}</pre>
+          </div>
+
+          <div className="lab-panel lab-chart">
+            <div className="chart-label">{step >= 4 ? "Pronóstico 2027" : "Producción promedio diaria anual"}</div>
+            <ResponsiveContainer width="100%" height="100%">
+              {step >= 4 ? (
+                <AreaChart data={visibleForecast} margin={{ top: 18, right: 16, left: -6, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="labForecastGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--blue)" stopOpacity={0.34} />
+                      <stop offset="100%" stopColor="var(--blue)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="month" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 11, fontFamily: "IBM Plex Mono, monospace" }} axisLine={false} tickLine={false} />
+                  <YAxis hide domain={[0.24, 0.258]} />
+                  <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 12, fontFamily: "IBM Plex Mono, monospace", fontSize: 12, color: "var(--ink)" }} formatter={(v) => [Number(v).toFixed(6), "Volatilidad"]} />
+                  <Area type="monotone" dataKey="vol" stroke="var(--blue)" strokeWidth={2.2} fill="url(#labForecastGrad)" isAnimationActive={false} dot={{ r: 2.5, fill: "var(--blue)" }} />
+                </AreaChart>
+              ) : (
+                <AreaChart data={OIL_ANNUAL.slice(0, step >= 1 ? OIL_ANNUAL.length : 8)} margin={{ top: 18, right: 16, left: -6, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="labOilGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--green)" stopOpacity={0.32} />
+                      <stop offset="100%" stopColor="var(--green)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <ReferenceLine y={502.7} stroke="var(--border-strong)" strokeDasharray="4 4" />
+                  <XAxis dataKey="year" interval={2} stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 10, fontFamily: "IBM Plex Mono, monospace" }} axisLine={false} tickLine={false} />
+                  <YAxis hide domain={[130, 580]} />
+                  <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 12, fontFamily: "IBM Plex Mono, monospace", fontSize: 12, color: "var(--ink)" }} formatter={(v) => [v + " mil b/d", "Producción"]} />
+                  <Area type="monotone" dataKey="prod" stroke="var(--green)" strokeWidth={2.2} fill="url(#labOilGrad)" isAnimationActive={false} dot={false} />
+                </AreaChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+
+          <div className="lab-panel lab-output">
+            <div className="oil-kpis">
+              <div className="metric-tile"><span>233</span><p>meses observados</p></div>
+              <div className="metric-tile"><span>{step >= 2 ? GARCH_FIT.archLm.toFixed(2) : "..."}</span><p>ARCH-LM</p></div>
+              <div className="metric-tile"><span>{step >= 3 ? GARCH_FIT.persistence.toFixed(4) : "..."}</span><p>persistencia</p></div>
+              <div className="metric-tile"><span>{step >= 4 ? "0.2443" : "..."}</span><p>vol. dic. 2027</p></div>
+            </div>
+            <div className="param-grid">
+              {params.map(([symbol, value, label]) => (
+                <div className="param-card" key={symbol}>
+                  <span>{symbol}</span>
+                  <strong>{step >= 3 ? value : "pendiente"}</strong>
+                  <p>{label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="shock-strip">
+              {OIL_SHOCKS.slice(0, 2).map((s) => (
+                <div className="shock-pill" key={s.period}>
+                  <strong>{s.period}</strong>
+                  <span>{s.ret > 0 ? "+" : ""}{s.ret.toFixed(3)}</span>
+                  <em>{s.from} → {s.to}</em>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SlideBalance() {
   const ventajas = [
     "Captura el agrupamiento de volatilidad observado empíricamente.",
@@ -406,6 +592,7 @@ export default function App() {
   const [current, setCurrent] = useState(0);
   const [theme, setTheme] = useState("dark");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [practicalOpen, setPracticalOpen] = useState(false);
 
   const goTo = useCallback((n) => setCurrent(Math.max(0, Math.min(TOTAL - 1, n))), []);
   const next = useCallback(() => goTo(current + 1), [current, goTo]);
@@ -433,12 +620,8 @@ export default function App() {
     touchX.current = null;
   };
 
-  const trackStyle = useMemo(() => ({
-    transform: `translateX(-${(100 / TOTAL) * current}%)`,
-    width: `${TOTAL * 100}%`,
-  }), [current]);
-
-  const currentMeta = FLAT[current];
+  const currentMeta = FLAT[current] || FLAT[FLAT.length - 1];
+  const CurrentSlide = SLIDES[current] || SLIDES[0];
 
   return (
     <div className={"app-shell theme-" + theme}>
@@ -467,6 +650,14 @@ export default function App() {
         </div>
 
         <div className="topbar-right">
+          <button
+            className={"practical-btn" + (practicalOpen ? " active" : "")}
+            onClick={() => setPracticalOpen(true)}
+            aria-label="Ir al caso practico"
+          >
+            <Database size={15} />
+            <span>Caso práctico</span>
+          </button>
           <div className="team-strip" aria-label="Integrantes del Grupo 10">
             <span>Grupo 10</span>
             {TEAM.map((m) => <span key={m}>{m}</span>)}
@@ -512,13 +703,7 @@ export default function App() {
         <main className="main">
           <div className="stage-outer">
             <div className="stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-              <div className="track" style={trackStyle}>
-                {SLIDES.map((S, i) => (
-                  <div className={"slide-slot" + (i === current ? " active" : "")} style={{ width: `${100 / TOTAL}%` }} key={i} aria-hidden={i !== current}>
-                    <S />
-                  </div>
-                ))}
-              </div>
+              <CurrentSlide key={current} />
             </div>
           </div>
 
@@ -538,6 +723,7 @@ export default function App() {
           </div>
         </main>
       </div>
+      {practicalOpen && <PracticalLab onClose={() => setPracticalOpen(false)} />}
     </div>
   );
 }
@@ -581,7 +767,7 @@ const CSS = `
   --rose-soft: rgba(255,110,89,0.13);
   --green: #64E7A0;
   --green-soft: rgba(100,231,160,0.11);
-  --shadow: 0 32px 110px -36px rgba(0,0,0,0.88);
+  --shadow: 0 18px 46px -30px rgba(0,0,0,0.78);
 }
 
 /* ---- light theme ---- */
@@ -603,7 +789,7 @@ const CSS = `
   --rose-soft: rgba(180,81,62,0.12);
   --green: #287D55;
   --green-soft: rgba(40,125,85,0.10);
-  --shadow: 0 24px 58px -30px rgba(20,35,45,0.25);
+  --shadow: 0 14px 34px -24px rgba(20,35,45,0.22);
 }
 
 .app-shell * { box-sizing: border-box; }
@@ -629,7 +815,6 @@ const CSS = `
     linear-gradient(90deg, color-mix(in srgb, var(--blue-soft) 72%, transparent), transparent 44%),
     var(--surface);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(18px);
   position: relative;
   overflow: hidden;
 }
@@ -727,6 +912,27 @@ const CSS = `
 .crumb-sep { color: var(--ink-faint); }
 .crumb-title { color: var(--ink); font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
 .topbar-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex: 1 1 390px; min-width: 0; }
+.practical-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(90deg, var(--blue-soft), var(--green-soft));
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .04em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.practical-btn:hover,
+.practical-btn.active {
+  border-color: var(--green);
+  color: var(--green);
+}
 .team-strip {
   display: flex;
   flex-wrap: wrap;
@@ -744,15 +950,14 @@ const CSS = `
   border-radius: 999px;
   padding: 5px 7px;
   white-space: nowrap;
-  backdrop-filter: blur(10px);
 }
 .team-strip span:first-child {
   color: var(--amber);
   border-color: var(--border-strong);
   background: var(--amber-soft);
 }
-.ticker { display: flex; gap: 4px; color: var(--ink-faint); overflow: hidden; width: 96px; height: 16px; opacity: 0.55; }
-.ticker-wave { width: 64px; height: 16px; flex-shrink: 0; animation: ticker-scroll 5.5s linear infinite; }
+.ticker { display: flex; gap: 4px; color: var(--ink-faint); overflow: hidden; width: 64px; height: 16px; opacity: 0.42; }
+.ticker-wave { width: 64px; height: 16px; flex-shrink: 0; }
 @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-64px); } }
 @media (prefers-reduced-motion: reduce) { .ticker-wave { animation: none; } }
 
@@ -786,7 +991,6 @@ const CSS = `
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
-  backdrop-filter: blur(18px);
 }
 .outline { padding: 14px 10px; display: flex; flex-direction: column; gap: 16px; }
 .outline-group-label {
@@ -877,8 +1081,7 @@ const CSS = `
     linear-gradient(145deg, color-mix(in srgb, var(--surface-3) 34%, transparent), transparent 42%),
     var(--surface);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
-  transition: min-height .25s ease;
+  transition: none;
   isolation: isolate;
 }
 .stage::after {
@@ -909,11 +1112,6 @@ const CSS = `
   background: linear-gradient(90deg, var(--blue), var(--green), var(--amber), var(--rose));
   opacity: 0.9;
 }
-.track { display: flex; align-items: flex-start; transition: transform 0.55s cubic-bezier(0.65,0,0.15,1); }
-@media (prefers-reduced-motion: reduce) { .track { transition: none; } }
-.slide-slot { flex-shrink: 0; opacity: 0.25; transition: opacity .25s ease; }
-.slide-slot.active { opacity: 1; }
-
 .slide {
   width: 100%;
   min-height: clamp(430px, 62vh, 640px);
@@ -964,7 +1162,10 @@ const CSS = `
 }
 .layout-method,
 .layout-apps,
-.layout-balance {
+.layout-balance,
+.layout-oil,
+.layout-results,
+.layout-forecast {
   gap: 16px;
 }
 
@@ -1323,6 +1524,437 @@ const CSS = `
   line-height: 1.45;
 }
 
+/* ---- practical lab ---- */
+.lab-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.58);
+}
+.lab-shell {
+  width: min(1180px, 100%);
+  max-height: min(900px, calc(100vh - 36px));
+  overflow: auto;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-3) 28%, transparent), transparent 46%),
+    var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 22px;
+  box-shadow: 0 24px 56px -34px rgba(0,0,0,.78);
+  padding: clamp(18px, 2.4vw, 28px);
+}
+.lab-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.lab-head h2 {
+  margin: 3px 0 6px;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(26px, 3vw, 42px);
+  line-height: 1.02;
+}
+.lab-head p {
+  margin: 0;
+  color: var(--ink-dim);
+  max-width: 760px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.lab-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(330px, .95fr) minmax(380px, 1.2fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.lab-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  min-width: 0;
+}
+.lab-runner,
+.lab-output {
+  display: grid;
+  gap: 10px;
+}
+.run-btn {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--green);
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+.run-btn:disabled {
+  opacity: .7;
+  cursor: progress;
+}
+.lab-steps {
+  display: grid;
+  gap: 8px;
+}
+.lab-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 9px;
+  cursor: pointer;
+}
+.lab-step span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+.lab-step strong {
+  font-size: 11.4px;
+}
+.lab-step.done {
+  background: var(--blue-soft);
+  color: var(--ink);
+}
+.lab-step.active {
+  border-color: var(--amber);
+  box-shadow: inset 3px 0 0 var(--amber);
+}
+.lab-console {
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+.console-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  margin-bottom: 10px;
+}
+.console-top em {
+  color: var(--green);
+  font-style: normal;
+}
+.lab-console pre {
+  margin: 0;
+  flex: 1;
+  white-space: pre-wrap;
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.lab-chart {
+  min-height: 360px;
+}
+.lab-output {
+  grid-column: 2 / span 2;
+}
+.lab-output .param-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.lab-output .shock-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ---- real oil case ---- */
+.layout-oil {
+  display: grid;
+  grid-template-columns: minmax(420px, 1.35fr) minmax(250px, .65fr);
+  grid-template-rows: 1fr auto;
+  align-items: stretch;
+}
+.oil-chart-panel,
+.forecast-chart {
+  min-height: 255px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--green-soft) 58%, transparent), transparent 65%),
+    var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 10px 6px 4px;
+  position: relative;
+  overflow: hidden;
+}
+.oil-chart-panel { grid-row: 1 / span 2; }
+.oil-chart-panel::before,
+.forecast-chart::before {
+  content: "";
+  position: absolute;
+  inset: 42px 16px 34px;
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px);
+  background-size: 68px 100%, 100% 42px;
+  pointer-events: none;
+  opacity: .55;
+}
+.oil-kpis,
+.forecast-readout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.metric-tile {
+  min-height: 92px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.metric-tile::before {
+  content: "";
+  position: absolute;
+  inset: auto 12px 10px 12px;
+  height: 3px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  opacity: .72;
+}
+.metric-tile.alert::before { background: linear-gradient(90deg, var(--rose), var(--amber)); }
+.metric-tile span {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(24px, 2.5vw, 34px);
+  line-height: 1;
+  color: var(--ink);
+}
+.metric-tile p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 11px;
+  line-height: 1.3;
+}
+.shock-strip {
+  display: grid;
+  gap: 8px;
+}
+.shock-pill {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+.shock-pill strong {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+}
+.shock-pill span {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--amber);
+  font-size: 11px;
+}
+.shock-pill em {
+  grid-column: 1 / -1;
+  color: var(--ink-dim);
+  font-style: normal;
+  font-size: 10.5px;
+}
+.source-panel {
+  display: grid;
+  gap: 10px;
+}
+.source-card {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+}
+.source-card svg {
+  color: var(--green);
+}
+.source-card strong,
+.source-card span {
+  display: block;
+}
+.source-card strong {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+}
+.source-card span {
+  margin-top: 3px;
+  color: var(--ink-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* ---- applied model results ---- */
+.layout-results {
+  display: grid;
+  grid-template-columns: minmax(260px, .82fr) minmax(420px, 1.18fr);
+  grid-template-rows: 1fr auto;
+}
+.result-hero {
+  grid-row: 1 / span 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  background:
+    linear-gradient(145deg, var(--rose-soft), transparent 54%),
+    var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.result-hero::after {
+  content: "";
+  position: absolute;
+  right: -34px;
+  bottom: -22px;
+  width: 170px;
+  height: 120px;
+  border: 1px solid color-mix(in srgb, var(--rose) 32%, transparent);
+  transform: rotate(28deg);
+}
+.param-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.param-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  min-height: 118px;
+}
+.param-card span {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+.param-card strong {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.param-card p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.validation-band {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 14px;
+  align-items: center;
+  background: linear-gradient(90deg, var(--blue-soft), var(--green-soft));
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+.validation-band div {
+  display: grid;
+  gap: 3px;
+}
+.validation-band span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.8px;
+  color: var(--ink-faint);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.validation-band strong {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+}
+.validation-band p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 11.4px;
+  line-height: 1.42;
+}
+.execution-flow {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.execution-flow div {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px;
+}
+.execution-flow span {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--amber);
+  margin-bottom: 5px;
+}
+.execution-flow strong {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.execution-flow p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 10.6px;
+  line-height: 1.35;
+}
+
+/* ---- forecast ---- */
+.layout-forecast {
+  display: grid;
+  grid-template-columns: minmax(440px, 1.35fr) minmax(240px, .65fr);
+  grid-template-rows: 1fr auto;
+  align-items: stretch;
+}
+.forecast-chart {
+  grid-row: 1 / span 2;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--blue-soft) 70%, transparent), transparent 66%),
+    var(--surface-2);
+}
+.forecast-readout {
+  grid-template-columns: 1fr;
+}
+
 /* ---- balance ---- */
 .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
 .balance-col { display: flex; flex-direction: column; background: var(--surface-2); border: 1px solid var(--border); border-radius: 18px; padding: 16px; position: relative; overflow: hidden; }
@@ -1383,7 +2015,7 @@ const CSS = `
 .page-foot { position: absolute; bottom: 14px; right: 18px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--ink-faint); }
 
 /* ================= Controls ================= */
-.controls { display: flex; align-items: center; gap: 16px; width: fit-content; max-width: min(100%, 1120px); justify-content: center; position: relative; z-index: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 999px; background: color-mix(in srgb, var(--surface) 76%, transparent); backdrop-filter: blur(16px); box-shadow: 0 18px 44px -28px rgba(0,0,0,.7); }
+.controls { display: flex; align-items: center; gap: 16px; width: fit-content; max-width: min(100%, 1120px); justify-content: center; position: relative; z-index: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); box-shadow: 0 10px 24px -20px rgba(0,0,0,.55); }
 .nav-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s ease, transform .15s ease, border-color .15s ease, color .15s ease; flex-shrink: 0; }
 .nav-btn:hover:not(:disabled) { background: var(--surface-3); border-color: var(--amber); color: var(--amber); transform: translateY(-1px); }
 .nav-btn:active:not(:disabled) { transform: scale(0.94); }
@@ -1400,6 +2032,7 @@ const CSS = `
   .topbar-left { flex: 1 1 100%; }
   .topbar-right { flex: 1 1 100%; justify-content: flex-start; }
   .team-strip { justify-content: flex-start; }
+  .practical-btn { order: -1; }
   .ticker { display: none; }
   .brand-title { gap: 8px; flex-wrap: wrap; }
   .brand-subtitle { white-space: normal; }
@@ -1420,7 +2053,25 @@ const CSS = `
   .method-flow,
   .method-detail,
   .app-map,
+  .oil-kpis,
+  .forecast-readout,
+  .param-grid,
+  .execution-flow,
   .balance-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .layout-oil,
+  .layout-results,
+  .layout-forecast { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .oil-chart-panel,
+  .forecast-chart,
+  .result-hero { grid-row: auto; }
+  .execution-flow { grid-column: auto; }
+  .validation-band { grid-template-columns: 1fr; align-items: start; }
+  .lab-grid { grid-template-columns: 1fr; }
+  .lab-output { grid-column: auto; }
+  .lab-output .param-grid,
+  .lab-output .shock-strip { grid-template-columns: 1fr 1fr; }
+  .lab-chart,
+  .lab-console { min-height: 280px; }
   .method-grid { grid-template-columns: 1fr; gap: 12px; }
   .persistence-strip { grid-template-columns: 1fr; align-items: start; }
   .cover-glyph { font-size: 120px; opacity: 0.06; }
@@ -1434,7 +2085,17 @@ const CSS = `
   .method-flow,
   .method-detail,
   .app-map,
+  .oil-kpis,
+  .forecast-readout,
+  .param-grid,
+  .execution-flow,
   .balance-grid { grid-template-columns: 1fr; }
+  .lab-overlay { padding: 8px; }
+  .lab-shell { max-height: calc(100vh - 16px); border-radius: 16px; }
+  .lab-head { align-items: flex-start; }
+  .lab-output .param-grid,
+  .lab-output .shock-strip,
+  .oil-kpis { grid-template-columns: 1fr; }
   .balance-summary { flex-direction: column; align-items: flex-start; }
   .team-strip span { font-size: 9.6px; padding: 5px 6px; }
 }
