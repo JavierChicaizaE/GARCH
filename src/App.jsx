@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine,
 } from "recharts";
-import { ArrowLeft, ArrowRight, Sun, Moon, Menu, X, Database, PlayCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sun, Moon, Menu, X, Database, PlayCircle, Calculator } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Data — extracted verbatim from Modelo_GARCH.pptx                  */
@@ -538,6 +538,102 @@ function PracticalLab({ onClose }) {
   );
 }
 
+function LiveGarchLab({ onClose }) {
+  const [omega, setOmega] = useState(0.00037);
+  const [alpha, setAlpha] = useState(0.033);
+  const [beta, setBeta] = useState(0.954);
+  const [shock, setShock] = useState(-0.95);
+  const [prevVar, setPrevVar] = useState(0.0625);
+
+  const shock2 = shock * shock;
+  const archTerm = alpha * shock2;
+  const garchTerm = beta * prevVar;
+  const variance = Math.max(0, omega + archTerm + garchTerm);
+  const volatility = Math.sqrt(variance);
+  const persistence = alpha + beta;
+  const longRun = persistence < 1 ? omega / (1 - persistence) : null;
+  const labSeries = Array.from({ length: 12 }, (_, i) => {
+    let v = variance;
+    for (let j = 0; j < i; j += 1) {
+      v = omega + persistence * v;
+    }
+    return { h: "t+" + (i + 1), vol: Math.sqrt(Math.max(0, v)) };
+  });
+
+  const controls = [
+    ["omega", "ω varianza base", omega, setOmega, 0, 0.004, 0.00001],
+    ["alpha", "α reacción al choque", alpha, setAlpha, 0, 0.35, 0.001],
+    ["beta", "β memoria", beta, setBeta, 0, 0.99, 0.001],
+    ["shock", "ε choque observado", shock, setShock, -2, 2, 0.01],
+    ["prevVar", "σ² previa", prevVar, setPrevVar, 0.001, 0.25, 0.001],
+  ];
+
+  return (
+    <section className="lab-overlay" aria-label="Laboratorio GARCH en vivo">
+      <div className="lab-shell live-shell">
+        <div className="lab-head">
+          <div>
+            <div className="brand-kicker">LABORATORIO EN VIVO</div>
+            <h2>Calculadora GARCH(1,1) paso a paso</h2>
+            <p>Cambia los parametros y observa en vivo como un choque y la memoria pasada forman la nueva volatilidad condicional.</p>
+          </div>
+          <button className="icon-btn" onClick={onClose} aria-label="Cerrar laboratorio en vivo"><X size={17} /></button>
+        </div>
+
+        <div className="live-grid">
+          <div className="lab-panel live-controls">
+            {controls.map(([id, label, value, setter, min, max, step]) => (
+              <label className="live-control" key={id}>
+                <span>{label}</span>
+                <strong>{Number(value).toFixed(id === "shock" ? 2 : 5)}</strong>
+                <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => setter(Number(e.target.value))} />
+              </label>
+            ))}
+          </div>
+
+          <div className="lab-panel live-formula">
+            <div className="console-top">
+              <span>Formula activa</span>
+              <em>{persistence < 1 ? "estable" : "no estacionario"}</em>
+            </div>
+            <div className="live-equation">σ²_t = ω + α ε²_t-1 + β σ²_t-1</div>
+            <div className="live-steps">
+              <div><span>01</span><strong>Choque al cuadrado</strong><p>ε² = {shock.toFixed(2)}² = {shock2.toFixed(5)}</p></div>
+              <div><span>02</span><strong>Componente ARCH</strong><p>αε² = {alpha.toFixed(4)} × {shock2.toFixed(5)} = {archTerm.toFixed(5)}</p></div>
+              <div><span>03</span><strong>Componente GARCH</strong><p>βσ² = {beta.toFixed(4)} × {prevVar.toFixed(5)} = {garchTerm.toFixed(5)}</p></div>
+              <div><span>04</span><strong>Varianza actual</strong><p>σ²_t = {variance.toFixed(5)}</p></div>
+            </div>
+          </div>
+
+          <div className="lab-panel live-result">
+            <div className="metric-tile"><span>{volatility.toFixed(4)}</span><p>volatilidad condicional σ_t</p></div>
+            <div className="metric-tile"><span>{persistence.toFixed(4)}</span><p>persistencia α + β</p></div>
+            <div className="metric-tile"><span>{longRun == null ? "∞" : longRun.toFixed(4)}</span><p>varianza de largo plazo</p></div>
+          </div>
+
+          <div className="lab-panel live-chart">
+            <div className="chart-label">Proyección mecánica si no aparecen nuevos choques</div>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={labSeries} margin={{ top: 18, right: 16, left: -6, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="liveGarchGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--amber)" stopOpacity={0.34} />
+                    <stop offset="100%" stopColor="var(--amber)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="h" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 10, fontFamily: "IBM Plex Mono, monospace" }} axisLine={false} tickLine={false} />
+                <YAxis hide domain={["auto", "auto"]} />
+                <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 12, fontFamily: "IBM Plex Mono, monospace", fontSize: 12, color: "var(--ink)" }} formatter={(v) => [Number(v).toFixed(5), "Volatilidad"]} />
+                <Area type="monotone" dataKey="vol" stroke="var(--amber)" strokeWidth={2.2} fill="url(#liveGarchGrad)" isAnimationActive={false} dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SlideBalance() {
   const ventajas = [
     "Captura el agrupamiento de volatilidad observado empíricamente.",
@@ -593,6 +689,7 @@ export default function App() {
   const [theme, setTheme] = useState("dark");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [practicalOpen, setPracticalOpen] = useState(false);
+  const [liveLabOpen, setLiveLabOpen] = useState(false);
 
   const goTo = useCallback((n) => setCurrent(Math.max(0, Math.min(TOTAL - 1, n))), []);
   const next = useCallback(() => goTo(current + 1), [current, goTo]);
@@ -652,11 +749,19 @@ export default function App() {
         <div className="topbar-right">
           <button
             className={"practical-btn" + (practicalOpen ? " active" : "")}
-            onClick={() => setPracticalOpen(true)}
+            onClick={() => { setPracticalOpen(true); setLiveLabOpen(false); }}
             aria-label="Ir al caso practico"
           >
             <Database size={15} />
             <span>Caso práctico</span>
+          </button>
+          <button
+            className={"practical-btn lab-btn" + (liveLabOpen ? " active" : "")}
+            onClick={() => { setLiveLabOpen(true); setPracticalOpen(false); }}
+            aria-label="Abrir laboratorio en vivo"
+          >
+            <Calculator size={15} />
+            <span>Laboratorio</span>
           </button>
           <div className="team-strip" aria-label="Integrantes del Grupo 10">
             <span>Grupo 10</span>
@@ -724,6 +829,7 @@ export default function App() {
         </main>
       </div>
       {practicalOpen && <PracticalLab onClose={() => setPracticalOpen(false)} />}
+      {liveLabOpen && <LiveGarchLab onClose={() => setLiveLabOpen(false)} />}
     </div>
   );
 }
@@ -1676,6 +1782,89 @@ const CSS = `
 .lab-output .shock-strip {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.live-shell {
+  width: min(1080px, 100%);
+}
+.live-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, .7fr) minmax(320px, 1fr) minmax(260px, .75fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.live-controls {
+  display: grid;
+  gap: 12px;
+}
+.live-control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.live-control span {
+  color: var(--ink-dim);
+  font-size: 11.4px;
+}
+.live-control strong {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--amber);
+  font-size: 10.8px;
+}
+.live-control input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--amber);
+}
+.live-formula {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.live-equation {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.05;
+  color: var(--ink);
+  padding: 12px 0;
+}
+.live-steps {
+  display: grid;
+  gap: 9px;
+}
+.live-steps div {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--surface-3) 45%, transparent);
+}
+.live-steps span {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.8px;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+.live-steps strong {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-size: 13.4px;
+  margin-bottom: 3px;
+}
+.live-steps p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.8px;
+  line-height: 1.45;
+}
+.live-result {
+  display: grid;
+  gap: 10px;
+}
+.live-chart {
+  grid-column: 1 / -1;
+  min-height: 260px;
+}
 
 /* ---- real oil case ---- */
 .layout-oil {
@@ -2067,7 +2256,9 @@ const CSS = `
   .execution-flow { grid-column: auto; }
   .validation-band { grid-template-columns: 1fr; align-items: start; }
   .lab-grid { grid-template-columns: 1fr; }
+  .live-grid { grid-template-columns: 1fr; }
   .lab-output { grid-column: auto; }
+  .live-chart { grid-column: auto; }
   .lab-output .param-grid,
   .lab-output .shock-strip { grid-template-columns: 1fr 1fr; }
   .lab-chart,
