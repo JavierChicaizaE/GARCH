@@ -551,6 +551,7 @@ function LiveGarchLab({ onClose }) {
   const variance = Math.max(0, omega + archTerm + garchTerm);
   const volatility = Math.sqrt(variance);
   const persistence = alpha + beta;
+  const hypothesisAccepted = persistence < 1;
   const longRun = persistence < 1 ? omega / (1 - persistence) : null;
   const labSeries = Array.from({ length: 12 }, (_, i) => {
     let v = variance;
@@ -569,15 +570,15 @@ function LiveGarchLab({ onClose }) {
   ];
 
   return (
-    <section className="lab-overlay" aria-label="Laboratorio GARCH en vivo">
+    <section className="lab-overlay" aria-label="Simulador GARCH en vivo">
       <div className="lab-shell live-shell">
         <div className="lab-head">
           <div>
-            <div className="brand-kicker">LABORATORIO EN VIVO</div>
+            <div className="brand-kicker">SIMULADOR EN VIVO</div>
             <h2>Calculadora GARCH(1,1) paso a paso</h2>
             <p>Cambia los parametros y observa en vivo como un choque y la memoria pasada forman la nueva volatilidad condicional.</p>
           </div>
-          <button className="icon-btn" onClick={onClose} aria-label="Cerrar laboratorio en vivo"><X size={17} /></button>
+          <button className="icon-btn" onClick={onClose} aria-label="Cerrar simulador en vivo"><X size={17} /></button>
         </div>
 
         <div className="live-grid">
@@ -593,10 +594,26 @@ function LiveGarchLab({ onClose }) {
 
           <div className="lab-panel live-formula">
             <div className="console-top">
-              <span>Formula activa</span>
-              <em>{persistence < 1 ? "estable" : "no estacionario"}</em>
+              <span>H0: α + β &lt; 1</span>
+              <em>{hypothesisAccepted ? "hipótesis aceptada" : "hipótesis rechazada"}</em>
             </div>
             <div className="live-equation">σ²_t = ω + α ε²_t-1 + β σ²_t-1</div>
+            <div className={"hypothesis-animation" + (hypothesisAccepted ? " goal" : " save")} key={hypothesisAccepted ? "goal" : "save"}>
+              <div className="goal-frame">
+                <div className="net-lines" />
+                <div className="keeper">
+                  <i className="keeper-head" />
+                  <i className="keeper-body" />
+                  <i className="keeper-arm left" />
+                  <i className="keeper-arm right" />
+                  <i className="keeper-leg left" />
+                  <i className="keeper-leg right" />
+                </div>
+                <div className="ball" />
+              </div>
+              <strong>{hypothesisAccepted ? "Gol: H0 aceptada" : "Tapada: H0 rechazada"}</strong>
+              <span>{hypothesisAccepted ? "La persistencia queda bajo 1; el GARCH es estacionario." : "La persistencia llega a 1 o más; el modelo no vuelve a una varianza estable."}</span>
+            </div>
             <div className="live-steps">
               <div><span>01</span><strong>Choque al cuadrado</strong><p>ε² = {shock.toFixed(2)}² = {shock2.toFixed(5)}</p></div>
               <div><span>02</span><strong>Componente ARCH</strong><p>αε² = {alpha.toFixed(4)} × {shock2.toFixed(5)} = {archTerm.toFixed(5)}</p></div>
@@ -758,10 +775,10 @@ export default function App() {
           <button
             className={"practical-btn lab-btn" + (liveLabOpen ? " active" : "")}
             onClick={() => { setLiveLabOpen(true); setPracticalOpen(false); }}
-            aria-label="Abrir laboratorio en vivo"
+            aria-label="Abrir simulador en vivo"
           >
             <Calculator size={15} />
-            <span>Laboratorio</span>
+            <span>Simulador</span>
           </button>
           <div className="team-strip" aria-label="Integrantes del Grupo 10">
             <span>Grupo 10</span>
@@ -1827,6 +1844,138 @@ const CSS = `
   color: var(--ink);
   padding: 12px 0;
 }
+.hypothesis-animation {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+  padding: 10px 12px;
+  overflow: hidden;
+}
+.hypothesis-animation strong,
+.hypothesis-animation span {
+  display: block;
+}
+.hypothesis-animation strong {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  color: var(--ink);
+}
+.hypothesis-animation span {
+  color: var(--ink-dim);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.goal-frame {
+  height: 86px;
+  border: 2px solid var(--border-strong);
+  border-bottom: 4px solid var(--green);
+  border-radius: 8px 8px 4px 4px;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(0deg, color-mix(in srgb, var(--green) 12%, transparent), transparent 42%),
+    var(--surface-3);
+}
+.net-lines {
+  position: absolute;
+  inset: 0;
+  opacity: .36;
+  background:
+    linear-gradient(to right, var(--border-strong) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-strong) 1px, transparent 1px);
+  background-size: 18px 100%, 100% 18px;
+}
+.ball {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 35%, #fff 0 25%, #1a2530 26% 34%, #fff 35% 100%);
+  border: 1px solid rgba(0,0,0,.35);
+  z-index: 3;
+}
+.keeper {
+  position: absolute;
+  left: 58px;
+  bottom: 12px;
+  width: 34px;
+  height: 48px;
+  z-index: 2;
+}
+.keeper i {
+  position: absolute;
+  display: block;
+  background: var(--blue);
+}
+.keeper-head {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  left: 11px;
+  top: 0;
+  background: var(--amber) !important;
+}
+.keeper-body {
+  width: 14px;
+  height: 22px;
+  left: 10px;
+  top: 12px;
+  border-radius: 8px 8px 5px 5px;
+}
+.keeper-arm,
+.keeper-leg {
+  width: 6px;
+  height: 24px;
+  border-radius: 999px;
+  transform-origin: top center;
+}
+.keeper-arm.left { left: 4px; top: 14px; transform: rotate(34deg); }
+.keeper-arm.right { right: 4px; top: 14px; transform: rotate(-34deg); }
+.keeper-leg.left { left: 10px; top: 31px; transform: rotate(18deg); }
+.keeper-leg.right { right: 10px; top: 31px; transform: rotate(-18deg); }
+.hypothesis-animation.goal {
+  border-color: color-mix(in srgb, var(--green) 55%, var(--border));
+}
+.hypothesis-animation.goal .ball {
+  animation: goal-shot .95s ease-out both;
+}
+.hypothesis-animation.goal .keeper {
+  animation: keeper-miss .95s ease-out both;
+}
+.hypothesis-animation.save {
+  border-color: color-mix(in srgb, var(--rose) 55%, var(--border));
+}
+.hypothesis-animation.save .ball {
+  animation: saved-shot .95s ease-out both;
+}
+.hypothesis-animation.save .keeper {
+  animation: keeper-save .95s ease-out both;
+}
+@keyframes goal-shot {
+  0% { left: -18px; top: 58px; transform: scale(.9); }
+  65% { left: 90px; top: 16px; transform: scale(1.05); }
+  100% { left: 120px; top: 10px; transform: scale(.72); }
+}
+@keyframes keeper-miss {
+  0% { transform: translateX(0) rotate(0); }
+  70% { transform: translateX(-18px) translateY(9px) rotate(-28deg); }
+  100% { transform: translateX(-20px) translateY(10px) rotate(-28deg); }
+}
+@keyframes saved-shot {
+  0% { left: -18px; top: 56px; transform: scale(.9); }
+  65% { left: 66px; top: 28px; transform: scale(1.05); }
+  100% { left: 42px; top: 58px; transform: scale(.8); }
+}
+@keyframes keeper-save {
+  0% { transform: translateX(0) rotate(0); }
+  62% { transform: translateX(24px) translateY(-4px) rotate(22deg); }
+  100% { transform: translateX(18px) translateY(4px) rotate(18deg); }
+}
 .live-steps {
   display: grid;
   gap: 9px;
@@ -2284,6 +2433,8 @@ const CSS = `
   .lab-overlay { padding: 8px; }
   .lab-shell { max-height: calc(100vh - 16px); border-radius: 16px; }
   .lab-head { align-items: flex-start; }
+  .hypothesis-animation { grid-template-columns: 1fr; }
+  .goal-frame { width: 160px; max-width: 100%; }
   .lab-output .param-grid,
   .lab-output .shock-strip,
   .oil-kpis { grid-template-columns: 1fr; }
