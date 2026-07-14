@@ -1,0 +1,19 @@
+﻿Total filas de datos: 103
+Primeras 3: [(None, None, None, None, None, None, None, None), (None, None, None, None, None, None, None, None), ('t', 'rt (real, H-D)', '╬Á┬▓t', '¤â┬▓t (varianza cond.)', '¤ât (volatilidad)', '¤ât anualizada', 'zt (shock N(0,1))', '┼Àt simulado = ¤ât┬Àzt')]
+Ultimas 3: [(98, -0.0028211963280920745, 7.959148721640205e-06, 0.00011599566225071603, 0.010770128237431346, 0.17097048542710652, 0.36945323970880556, 0.003979058769398298), (99, 0.008109798313078282, 6.576882867880735e-05, 0.00011139222778527264, 0.010554251644966242, 0.1675435507618503, 0.6976226312584114, 0.007362884803524767), (100, 0.004200011068531894, 1.764009297579042e-05, 0.00011326027648536247, 0.010642381147344915, 0.16894256324062135, -0.4710726973677219, -0.00501333519349516)]
+
+--- Graficas completa ---
+('Graficas - GARCH', None, None, None, None, None, None, None, None, None)
+('KPIs del modelo', None, None, None, None, None, None, None, None, None)
+('¤ë', 1.2e-05, None, None, None, None, None, None, None, None)
+('╬▒Ôéü', 0.1, None, None, None, None, None, None, None, None)
+('╬▓Ôéü', 0.85, None, None, None, None, None, None, None, None)
+('Persistencia ╬▒Ôéü+╬▓Ôéü', 0.95, None, None, None, None, None, None, None, None)
+('Volatilidad incondicional diaria', 0.01549193338482966, None, None, None, None, None, None, None, None)
+('Volatilidad incondicional anualizada', 0.24592681838303027, None, None, None, None, None, None, None, None)
+('Volatilidad media simulada', 0.01145425142217143, None, None, None, None, None, None, None, None)
+('Volatilidad m├íxima simulada', 0.015185896144624194, None, None, None, None, None, None, None, None)
+('Volatilidad m├¡nima simulada', 0.009040268973726775, None, None, None, None, None, None, None, None)
+('El modelo GARCH muestra que la volatilidad tiene alta persistencia porque ╬▒Ôéü+╬▓Ôéü es 0.95, los shocks afectan al mercado y sus efectos desaparecen lentamente y la volatilidad esperada es aproximadamente 1.55% diaria y 24.59% anual, mientras que la simulaci├│n confirma que el riesgo var├¡a entre periodos."', None, None, None, None, None, None, None, None, None)
+('La l├¡nea azul muestra los retornos reales y la roja los simulados por GARCH. Ambos tienen una magnitud similar, mostrando que el modelo reproduce correctamente el nivel de variaci├│n del activo, no se busca predecir el movimiento exacto de cada d├¡a, sino la escala de volatilidad', None, None, None, None, None, None, None, None, None)
+('Muestra c├│mo cambia la volatilidad en el tiempo, se observan periodos de calma y aumentos de volatilidad despu├®s de shocks grandes, esto demuestra la persistencia del modelo GARCH (╬▒1+╬▓1=0.95), donde los efectos de un impacto no desaparecen inmediatamente', None, None, None, None, None, None, None, None, None)

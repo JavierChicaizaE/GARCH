@@ -1,0 +1,99 @@
+﻿[0] Heading 1 | ┬┐Qu├® es el modelo GARCH?
+[1] Normal | El modelo GARCH (Generalized Autoregressive Conditional Heteroskedasticity) es un modelo econom├®trico utilizado para analizar y pronosticar la volatilidad de una serie temporal. Su principal caracter├¡stica es que permite que la varianza cambie a lo largo del tiempo, algo que ocurre con frecuencia en variables financieras y econ├│micas.
+[2] Normal | A diferencia de una regresi├│n cl├ísica, donde se supone que la varianza del error permanece constante, GARCH reconoce que existen per├¡odos de estabilidad y otros de alta incertidumbre. Gracias a ello es posible estimar el riesgo futuro de manera m├ís realista.
+[5] Heading 1 | Historia del modelo
+[6] Normal | Durante muchos a├▒os los economistas asum├¡an que la variabilidad de una serie permanec├¡a constante. Sin embargo, al analizar mercados financieros se observ├│ que exist├¡an per├¡odos donde los cambios eran peque├▒os y otros donde eran extremadamente grandes.
+[7] Normal | En 1982 Robert Engle propuso el modelo ARCH para resolver este problema. Posteriormente, en 1986 Tim Bollerslev desarroll├│ el modelo GARCH, que mejora al ARCH incorporando la informaci├│n de la volatilidad pasada.
+[8] Normal | Actualmente GARCH es uno de los modelos m├ís utilizados para analizar riesgo financiero.
+[10] Heading 1 | ┬┐Qu├® es la volatilidad?
+[11] Normal | La volatilidad representa el grado de variaci├│n de una variable respecto al tiempo.
+[12] Normal | Cuando una variable cambia muy poco entre un per├¡odo y otro, se dice que posee baja volatilidad.
+[13] Normal | Cuando presenta cambios bruscos y frecuentes, se considera una variable con alta volatilidad.
+[14] Normal | Ejemplos:
+[15] List Paragraph | Precio del petr├│leo 
+[16] List Paragraph | Precio del d├│lar 
+[17] List Paragraph | Acciones 
+[18] List Paragraph | Bitcoin 
+[19] List Paragraph | Tasas de inter├®s 
+[20] Normal | La volatilidad es importante porque permite medir el riesgo.
+[23] Heading 1 | ┬┐Qu├® problema resuelve GARCH?
+[24] Normal | En la econometr├¡a cl├ísica se supone que todos los errores poseen la misma varianza.
+[25] Normal | Sin embargo, en la realidad esto rara vez ocurre.
+[26] Normal | Los mercados financieros presentan:
+[27] List Paragraph | per├¡odos tranquilos; 
+[28] List Paragraph | per├¡odos de crisis; 
+[29] List Paragraph | cambios repentinos; 
+[30] List Paragraph | alta incertidumbre. 
+[31] Normal | Como consecuencia, la varianza cambia continuamente.
+[32] Normal | GARCH fue creado precisamente para modelar esa variabilidad.
+[34] Heading 1 | Heterocedasticidad
+[35] Normal | La heterocedasticidad ocurre cuando la varianza de los errores no permanece constante.
+[36] Normal | Esto significa que algunos per├¡odos presentan mucha dispersi├│n mientras otros presentan poca.
+[37] Normal | En un modelo de regresi├│n esto viola uno de los supuestos cl├ísicos.
+[38] Normal | GARCH utiliza precisamente esa informaci├│n para construir un modelo de volatilidad.
+[39] Heading 1 | ┬┐Por qu├® se llama GARCH?
+[40] Normal | Generalized
+[41] Normal | Porque generaliza el modelo ARCH.
+[42] Normal | Autoregressive
+[43] Normal | Porque utiliza informaci├│n del pasado.
+[44] Normal | Conditional
+[45] Normal | Porque la varianza depende de informaci├│n conocida anteriormente.
+[46] Normal | Heteroskedasticity
+[47] Normal | Porque la varianza cambia con el tiempo
+[49] Heading 1 | F├│rmulas del modelo GARCH
+[50] Normal | Ecuaci├│n de la media:
+rÔé£ = ╬╝ + ╬ÁÔé£
+[51] Normal | 
+Ecuaci├│n del error:
+╬ÁÔé£ = ¤âÔé£ zÔé£
+[52] Normal | 
+Ecuaci├│n de la varianza condicional:
+¤â┬▓Ôé£ = ¤ë + ╬▒╬Á┬▓Ôé£ÔéïÔéü + ╬▓¤â┬▓Ôé£ÔéïÔéü
+[54] Heading 1 | Explicaci├│n de cada par├ímetro
+[55] Heading 3 | ¤ë
+[56] Normal | Representa la volatilidad promedio de largo plazo.
+[57] Normal | Siempre debe ser positiva.
+[59] Heading 3 | ╬▒
+[60] Normal | Mide el efecto que tienen las noticias recientes sobre la volatilidad.
+[61] Normal | Mientras mayor sea ╬▒, mayor ser├í la reacci├│n del mercado.
+[63] Heading 3 | ╬▓
+[64] Normal | Representa la persistencia.
+[65] Normal | Si ╬▓ es alto significa que una crisis puede afectar la volatilidad durante varios per├¡odos.
+[67] Heading 3 | ╬Á┬▓
+[68] Normal | Representa el choque ocurrido anteriormente.
+[70] Heading 3 | ¤â┬▓
+[71] Normal | Representa la volatilidad anterior.
+[73] Heading 1 | Hip├│tesis para aplicar GARCH
+[74] Normal | Antes de estimar un modelo GARCH se debe comprobar que existen efectos ARCH.
+[75] Normal | Hip├│tesis nula
+[76] Normal | No existen efectos ARCH.
+[77] Normal | La varianza permanece constante.
+[78] Normal | Hip├│tesis alternativa
+[79] Normal | S├¡ existen efectos ARCH.
+[80] Normal | La varianza cambia con el tiempo.
+[81] Normal | Decisi├│n
+[82] Normal | Si el p-valor es menor a 0.05 se rechaza HÔéÇ y se utiliza GARCH.
+[83] Heading 1 | Supuestos del modelo
+[84] List Paragraph | La serie debe ser estacionaria. 
+[85] List Paragraph | Debe existir heterocedasticidad condicional. 
+[86] List Paragraph | Los errores deben tener media cero. 
+[87] List Paragraph | ¤ë > 0. 
+[88] List Paragraph | ╬▒ ÔëÑ 0. 
+[89] List Paragraph | ╬▓ ÔëÑ 0. 
+[90] List Paragraph | ╬▒ + ╬▓ < 1 para garantizar estabilidad. 
+[91] Normal | Explica que estos supuestos aseguran que el modelo sea matem├íticamente v├ílido y que las estimaciones sean confiables.
+[92] Heading 1 | ┬┐C├│mo se interpreta el modelo?
+[93] Normal | Si ╬▒ es alto:
+[94] Normal | La volatilidad responde r├ípidamente a noticias recientes.
+[95] Normal | Si ╬▓ es alto:
+[96] Normal | La volatilidad permanece durante mucho tiempo.
+[97] Normal | Si ╬▒ + ╬▓ est├í muy cerca de 1:
+[98] Normal | La volatilidad es altamente persistente.
+[99] Heading 1 | Distribuciones utilizadas
+[100] Normal | Generalmente se supone que
+[101] Normal | zt Ôê╝N(0,1)
+[103] Normal | Sin embargo, cuando existen datos extremos tambi├®n pueden utilizarse:
+[104] List Paragraph | Distribuci├│n t de Student. 
+[105] List Paragraph | Distribuci├│n GED. 
+[106] Normal | Estas distribuciones representan mejor eventos poco frecuentes pero muy intensos.
+[107] Heading 1 | Diferencia entre ARCH y GARCH

@@ -1,0 +1,8 @@
+Row 1: ['INTERPRETACIEN']
+Row 2: ['Diagnóstico']
+Row 3: ['Estacionariedad', 'El proceso es estacionario en covarianza (α₁+β₁ = 0,9500 < 1): la varianza incondicional existe y es finita.']
+Row 4: ['Persistencia de la volatilidad', 'La persistencia es moderada-alta (0,9500): la volatilidad tiene memoria pero se disipa en un plazo razonable.']
+Row 5: ['Componente dominante', 'Domina el término GARCH (β₁ = 0,85 > α₁ = 0,10): la volatilidad se explica más por su propio pasado (suavizamiento) que por sorpresas puntuales.']
+Row 6: ['Rango de parámetros vs. literatura', 'Los parámetros están dentro del rango típico reportado en la literatura (α₁ ≈ 0.05–0.15, β₁ ≈ 0.80–0.95).']
+Row 7: ['Volatilidad de largo plazo', 'La volatilidad de largo plazo (incondicional) es 1,55% diaria, equivalente a 24,59% anualizada.']
+Row 10: ['Existe volatilidad y heterocedasticidad condicional, ya que el riesgo cambia a través del tiempo, el modelo GARCH confirma que los shocks afectan la volatilidad y sus efectos permanecen durante varios periodos (α1+β1=0.95)']

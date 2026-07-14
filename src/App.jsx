@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
-  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine,
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine,
 } from "recharts";
 import { ArrowLeft, ArrowRight, Sun, Moon, Menu, X, Database, PlayCircle, Calculator } from "lucide-react";
 
@@ -57,6 +57,17 @@ const FORECAST_2027 = [
   { month: "Sep", vol: 0.246944 }, { month: "Oct", vol: 0.246071 },
   { month: "Nov", vol: 0.245206 }, { month: "Dic", vol: 0.244349 },
 ];
+
+/* ---- Datos del Excel GARCH-EXCEL.xlsx (índice bursátil, feb–jun 2026) ---- */
+/* ---- Datos del Excel GARCH-EXCEL.xlsx (índice bursátil, feb–jun 2026) ---- */
+const EXCEL_FULL_DATA = [{"t": 1, "fecha": "2026-02-17", "precio": 6843.22, "rt": 0.1031, "e2": 0.010624, "sig2": 0.819061, "sig": 0.905, "z": -0.214, "ysim": -0.1937}, {"t": 2, "fecha": "2026-02-18", "precio": 6881.31, "rt": 0.5551, "e2": 0.308098, "sig2": 0.817265, "sig": 0.904, "z": 0.7138, "ysim": 0.6453}, {"t": 3, "fecha": "2026-02-19", "precio": 6861.89, "rt": -0.2826, "e2": 0.07987, "sig2": 0.845485, "sig": 0.9195, "z": -0.4903, "ysim": -0.4509}, {"t": 4, "fecha": "2026-02-20", "precio": 6909.51, "rt": 0.6916, "e2": 0.478284, "sig2": 0.846649, "sig": 0.9201, "z": -0.1674, "ysim": -0.154}, {"t": 5, "fecha": "2026-02-23", "precio": 6837.75, "rt": -1.044, "e2": 1.089935, "sig2": 0.88748, "sig": 0.9421, "z": 2.3552, "ysim": 2.2187}, {"t": 6, "fecha": "2026-02-24", "precio": 6890.07, "rt": 0.7623, "e2": 0.581027, "sig2": 0.983352, "sig": 0.9916, "z": 1.8244, "ysim": 1.8092}, {"t": 7, "fecha": "2026-02-25", "precio": 6946.13, "rt": 0.8103, "e2": 0.656655, "sig2": 1.013952, "sig": 1.007, "z": -1.0047, "ysim": -1.0117}, {"t": 8, "fecha": "2026-02-26", "precio": 6908.86, "rt": -0.538, "e2": 0.289447, "sig2": 1.047524, "sig": 1.0235, "z": 1.128, "ysim": 1.1545}, {"t": 9, "fecha": "2026-02-27", "precio": 6878.88, "rt": -0.4349, "e2": 0.189117, "sig2": 1.039343, "sig": 1.0195, "z": -0.5338, "ysim": -0.5442}, {"t": 10, "fecha": "2026-03-02", "precio": 6881.62, "rt": 0.0398, "e2": 0.001586, "sig2": 1.022341, "sig": 1.0111, "z": -0.2962, "ysim": -0.2995}, {"t": 11, "fecha": "2026-03-03", "precio": 6816.63, "rt": -0.9489, "e2": 0.900392, "sig2": 0.989146, "sig": 0.9946, "z": -0.3167, "ysim": -0.315}, {"t": 12, "fecha": "2026-03-04", "precio": 6869.5, "rt": 0.7726, "e2": 0.596928, "sig2": 1.050829, "sig": 1.0251, "z": 1.2697, "ysim": 1.3015}, {"t": 13, "fecha": "2026-03-05", "precio": 6830.71, "rt": -0.5663, "e2": 0.320662, "sig2": 1.072877, "sig": 1.0358, "z": -0.2907, "ysim": -0.3011}, {"t": 14, "fecha": "2026-03-06", "precio": 6740.02, "rt": -1.3366, "e2": 1.786427, "sig2": 1.064027, "sig": 1.0315, "z": 0.2242, "ysim": 0.2313}, {"t": 15, "fecha": "2026-03-09", "precio": 6795.99, "rt": 0.827, "e2": 0.683901, "sig2": 1.203061, "sig": 1.0968, "z": -1.6278, "ysim": -1.7854}, {"t": 16, "fecha": "2026-03-10", "precio": 6781.48, "rt": -0.2137, "e2": 0.045682, "sig2": 1.21099, "sig": 1.1004, "z": -1.1041, "ysim": -1.215}, {"t": 17, "fecha": "2026-03-11", "precio": 6775.8, "rt": -0.0838, "e2": 0.007021, "sig2": 1.153907, "sig": 1.0742, "z": 0.6541, "ysim": 0.5951}, {"t": 18, "fecha": "2026-03-12", "precio": 6672.62, "rt": -1.5345, "e2": 2.354673, "sig2": 1.101538, "sig": 1.0495, "z": -0.8858, "ysim": -0.9296}, {"t": 19, "fecha": "2026-03-13", "precio": 6632.19, "rt": -0.6078, "e2": 0.369357, "sig2": 1.291771, "sig": 1.1366, "z": 1.952, "ysim": 2.2186}, {"t": 20, "fecha": "2026-03-16", "precio": 6699.38, "rt": 1.008, "e2": 1.01604, "sig2": 1.254938, "sig": 1.1202, "z": -1.1596, "ysim": -1.299}, {"t": 21, "fecha": "2026-03-17", "precio": 6716.09, "rt": 0.2491, "e2": 0.062061, "sig2": 1.288287, "sig": 1.135, "z": -1.088, "ysim": -1.2349}, {"t": 22, "fecha": "2026-03-18", "precio": 6624.7, "rt": -1.3701, "e2": 1.877209, "sig2": 1.221268, "sig": 1.1051, "z": -1.1477, "ysim": -1.2684}, {"t": 23, "fecha": "2026-03-19", "precio": 6606.49, "rt": -0.2753, "e2": 0.07577, "sig2": 1.345799, "sig": 1.1601, "z": -0.1947, "ysim": -0.2258}, {"t": 24, "fecha": "2026-03-20", "precio": 6506.48, "rt": -1.5254, "e2": 2.326815, "sig2": 1.271499, "sig": 1.1276, "z": -0.1974, "ysim": -0.2226}, {"t": 25, "fecha": "2026-03-23", "precio": 6581, "rt": 1.1388, "e2": 1.296886, "sig2": 1.433456, "sig": 1.1973, "z": 0.9678, "ysim": 1.1587}, {"t": 26, "fecha": "2026-03-24", "precio": 6556.37, "rt": -0.375, "e2": 0.140599, "sig2": 1.468126, "sig": 1.2117, "z": 0.021, "ysim": 0.0255}, {"t": 27, "fecha": "2026-03-25", "precio": 6591.9, "rt": 0.5405, "e2": 0.292081, "sig2": 1.381966, "sig": 1.1756, "z": 0.5914, "ysim": 0.6952}, {"t": 28, "fecha": "2026-03-26", "precio": 6477.16, "rt": -1.756, "e2": 3.083378, "sig2": 1.32388, "sig": 1.1506, "z": 0.859, "ysim": 0.9884}, {"t": 29, "fecha": "2026-03-27", "precio": 6368.85, "rt": -1.6863, "e2": 2.843685, "sig2": 1.553635, "sig": 1.2465, "z": -0.3084, "ysim": -0.3844}, {"t": 30, "fecha": "2026-03-30", "precio": 6343.72, "rt": -0.3954, "e2": 0.15631, "sig2": 1.724957, "sig": 1.3134, "z": 0.0773, "ysim": 0.1016}, {"t": 31, "fecha": "2026-03-31", "precio": 6528.52, "rt": 2.8715, "e2": 8.245428, "sig2": 1.601844, "sig": 1.2656, "z": -0.7756, "ysim": -0.9816}, {"t": 32, "fecha": "2026-04-01", "precio": 6575.32, "rt": 0.7143, "e2": 0.510228, "sig2": 2.30611, "sig": 1.5186, "z": 0.4683, "ysim": 0.7112}, {"t": 33, "fecha": "2026-04-02", "precio": 6582.69, "rt": 0.112, "e2": 0.012549, "sig2": 2.131216, "sig": 1.4599, "z": 0.1959, "ysim": 0.2859}, {"t": 34, "fecha": "2026-04-06", "precio": 6611.83, "rt": 0.4417, "e2": 0.195096, "sig2": 1.932788, "sig": 1.3903, "z": -1.923, "ysim": -2.6734}, {"t": 35, "fecha": "2026-04-07", "precio": 6616.85, "rt": 0.0759, "e2": 0.005761, "sig2": 1.782379, "sig": 1.3351, "z": -1.3562, "ysim": -1.8106}, {"t": 36, "fecha": "2026-04-08", "precio": 6782.81, "rt": 2.4772, "e2": 6.136511, "sig2": 1.635602, "sig": 1.2789, "z": -0.6858, "ysim": -0.877}, {"t": 37, "fecha": "2026-04-09", "precio": 6824.66, "rt": 0.6151, "e2": 0.378361, "sig2": 2.123913, "sig": 1.4574, "z": -1.5272, "ysim": -2.2257}, {"t": 38, "fecha": "2026-04-10", "precio": 6816.89, "rt": -0.1139, "e2": 0.012978, "sig2": 1.963162, "sig": 1.4011, "z": 1.682, "ysim": 2.3567}, {"t": 39, "fecha": "2026-04-13", "precio": 6886.24, "rt": 1.0122, "e2": 1.024526, "sig2": 1.789966, "sig": 1.3379, "z": 1.1277, "ysim": 1.5087}, {"t": 40, "fecha": "2026-04-14", "precio": 6967.38, "rt": 1.1714, "e2": 1.372186, "sig2": 1.743924, "sig": 1.3206, "z": 0.7804, "ysim": 1.0306}, {"t": 41, "fecha": "2026-04-15", "precio": 7022.95, "rt": 0.7944, "e2": 0.631089, "sig2": 1.739545, "sig": 1.3189, "z": -0.5681, "ysim": -0.7493}, {"t": 42, "fecha": "2026-04-16", "precio": 7041.28, "rt": 0.2607, "e2": 0.067942, "sig2": 1.661722, "sig": 1.2891, "z": 1.118, "ysim": 1.4412}, {"t": 43, "fecha": "2026-04-17", "precio": 7126.06, "rt": 1.1969, "e2": 1.432439, "sig2": 1.539258, "sig": 1.2407, "z": -0.6172, "ysim": -0.7657}, {"t": 44, "fecha": "2026-04-20", "precio": 7109.14, "rt": -0.2377, "e2": 0.056509, "sig2": 1.571613, "sig": 1.2536, "z": -0.1526, "ysim": -0.1913}, {"t": 45, "fecha": "2026-04-21", "precio": 7064.01, "rt": -0.6368, "e2": 0.405565, "sig2": 1.461536, "sig": 1.2089, "z": -0.6437, "ysim": -0.7782}, {"t": 46, "fecha": "2026-04-22", "precio": 7137.9, "rt": 1.0406, "e2": 1.082794, "sig2": 1.402862, "sig": 1.1844, "z": -0.7631, "ysim": -0.9038}, {"t": 47, "fecha": "2026-04-23", "precio": 7108.4, "rt": -0.4141, "e2": 0.171515, "sig2": 1.420712, "sig": 1.1919, "z": 0.463, "ysim": 0.5519}, {"t": 48, "fecha": "2026-04-24", "precio": 7165.08, "rt": 0.7942, "e2": 0.630761, "sig2": 1.344757, "sig": 1.1596, "z": 0.0188, "ysim": 0.0218}, {"t": 49, "fecha": "2026-04-27", "precio": 7173.91, "rt": 0.1232, "e2": 0.015169, "sig2": 1.326119, "sig": 1.1516, "z": -0.6832, "ysim": -0.7867}, {"t": 50, "fecha": "2026-04-28", "precio": 7138.8, "rt": -0.4906, "e2": 0.240702, "sig2": 1.248718, "sig": 1.1175, "z": 0.6558, "ysim": 0.7329}, {"t": 51, "fecha": "2026-04-29", "precio": 7135.95, "rt": -0.0399, "e2": 0.001594, "sig2": 1.205481, "sig": 1.0979, "z": 0.8484, "ysim": 0.9315}, {"t": 52, "fecha": "2026-04-30", "precio": 7209.01, "rt": 1.0186, "e2": 1.037596, "sig2": 1.144818, "sig": 1.07, "z": -0.2315, "ysim": -0.2477}, {"t": 53, "fecha": "2026-05-01", "precio": 7230.12, "rt": 0.2924, "e2": 0.085498, "sig2": 1.196855, "sig": 1.094, "z": -1.4312, "ysim": -1.5657}, {"t": 54, "fecha": "2026-05-04", "precio": 7200.75, "rt": -0.407, "e2": 0.165685, "sig2": 1.145876, "sig": 1.0705, "z": 0.3983, "ysim": 0.4263}, {"t": 55, "fecha": "2026-05-05", "precio": 7259.22, "rt": 0.8087, "e2": 0.654028, "sig2": 1.110563, "sig": 1.0538, "z": -0.1727, "ysim": -0.182}, {"t": 56, "fecha": "2026-05-06", "precio": 7365.12, "rt": 1.4483, "e2": 2.097561, "sig2": 1.129382, "sig": 1.0627, "z": 1.2242, "ysim": 1.301}, {"t": 57, "fecha": "2026-05-07", "precio": 7337.11, "rt": -0.381, "e2": 0.145185, "sig2": 1.289731, "sig": 1.1357, "z": 0.5947, "ysim": 0.6754}, {"t": 58, "fecha": "2026-05-08", "precio": 7398.93, "rt": 0.839, "e2": 0.703982, "sig2": 1.230789, "sig": 1.1094, "z": 0.1611, "ysim": 0.1787}, {"t": 59, "fecha": "2026-05-11", "precio": 7412.84, "rt": 0.1878, "e2": 0.035278, "sig2": 1.236569, "sig": 1.112, "z": 0.0184, "ysim": 0.0204}, {"t": 60, "fecha": "2026-05-12", "precio": 7400.96, "rt": -0.1604, "e2": 0.025725, "sig2": 1.174612, "sig": 1.0838, "z": 0.8264, "ysim": 0.8956}, {"t": 61, "fecha": "2026-05-13", "precio": 7444.25, "rt": 0.5832, "e2": 0.340146, "sig2": 1.120992, "sig": 1.0588, "z": 0.6935, "ysim": 0.7342}, {"t": 62, "fecha": "2026-05-14", "precio": 7501.24, "rt": 0.7626, "e2": 0.581622, "sig2": 1.106858, "sig": 1.0521, "z": 0.1196, "ysim": 0.1258}, {"t": 63, "fecha": "2026-05-15", "precio": 7408.5, "rt": -1.244, "e2": 1.547623, "sig2": 1.118992, "sig": 1.0578, "z": -0.9348, "ysim": -0.9888}, {"t": 64, "fecha": "2026-05-18", "precio": 7403.05, "rt": -0.0736, "e2": 0.005416, "sig2": 1.225905, "sig": 1.1072, "z": -1.3218, "ysim": -1.4636}, {"t": 65, "fecha": "2026-05-19", "precio": 7353.61, "rt": -0.6701, "e2": 0.448998, "sig2": 1.162561, "sig": 1.0782, "z": -0.1482, "ysim": -0.1598}, {"t": 66, "fecha": "2026-05-20", "precio": 7432.97, "rt": 1.0734, "e2": 1.152222, "sig2": 1.153077, "sig": 1.0738, "z": 0.0583, "ysim": 0.0626}, {"t": 67, "fecha": "2026-05-21", "precio": 7445.72, "rt": 0.1714, "e2": 0.029373, "sig2": 1.215337, "sig": 1.1024, "z": 0.5398, "ysim": 0.5951}, {"t": 68, "fecha": "2026-05-22", "precio": 7473.47, "rt": 0.372, "e2": 0.138387, "sig2": 1.155974, "sig": 1.0752, "z": -0.83, "ysim": -0.8924}, {"t": 69, "fecha": "2026-05-26", "precio": 7519.12, "rt": 0.609, "e2": 0.370844, "sig2": 1.116417, "sig": 1.0566, "z": 1.6126, "ysim": 1.7038}, {"t": 70, "fecha": "2026-05-27", "precio": 7520.36, "rt": 0.0165, "e2": 0.000272, "sig2": 1.106039, "sig": 1.0517, "z": 1.0974, "ysim": 1.1541}, {"t": 71, "fecha": "2026-05-28", "precio": 7563.63, "rt": 0.5737, "e2": 0.329157, "sig2": 1.06016, "sig": 1.0296, "z": 1.0766, "ysim": 1.1086}, {"t": 72, "fecha": "2026-05-29", "precio": 7580.06, "rt": 0.217, "e2": 0.047084, "sig2": 1.054052, "sig": 1.0267, "z": 0.1024, "ysim": 0.1052}, {"t": 73, "fecha": "2026-06-01", "precio": 7599.96, "rt": 0.2622, "e2": 0.068742, "sig2": 1.020652, "sig": 1.0103, "z": -0.1227, "ysim": -0.124}, {"t": 74, "fecha": "2026-06-02", "precio": 7609.78, "rt": 0.1291, "e2": 0.016674, "sig2": 0.994429, "sig": 0.9972, "z": -0.5747, "ysim": -0.5731}, {"t": 75, "fecha": "2026-06-03", "precio": 7553.68, "rt": -0.7399, "e2": 0.547511, "sig2": 0.966932, "sig": 0.9833, "z": -0.9964, "ysim": -0.9798}, {"t": 76, "fecha": "2026-06-04", "precio": 7584.31, "rt": 0.4047, "e2": 0.163764, "sig2": 0.996643, "sig": 0.9983, "z": 0.0775, "ysim": 0.0774}, {"t": 77, "fecha": "2026-06-05", "precio": 7383.74, "rt": -2.6801, "e2": 7.183126, "sig2": 0.983523, "sig": 0.9917, "z": 0.997, "ysim": 0.9888}, {"t": 78, "fecha": "2026-06-08", "precio": 7405.73, "rt": 0.2974, "e2": 0.088431, "sig2": 1.674307, "sig": 1.294, "z": -0.5026, "ysim": -0.6504}, {"t": 79, "fecha": "2026-06-09", "precio": 7386.65, "rt": -0.258, "e2": 0.066549, "sig2": 1.552004, "sig": 1.2458, "z": 0.8392, "ysim": 1.0454}, {"t": 80, "fecha": "2026-06-10", "precio": 7266.99, "rt": -1.6332, "e2": 2.667388, "sig2": 1.445859, "sig": 1.2024, "z": -0.3419, "ysim": -0.4111}, {"t": 81, "fecha": "2026-06-11", "precio": 7394.3, "rt": 1.7367, "e2": 3.016216, "sig2": 1.615719, "sig": 1.2711, "z": 1.1853, "ysim": 1.5066}, {"t": 82, "fecha": "2026-06-12", "precio": 7431.46, "rt": 0.5013, "e2": 0.251292, "sig2": 1.794982, "sig": 1.3398, "z": 0.631, "ysim": 0.8455}, {"t": 83, "fecha": "2026-06-15", "precio": 7554.29, "rt": 1.6393, "e2": 2.687394, "sig2": 1.670864, "sig": 1.2926, "z": -1.5005, "ysim": -1.9396}, {"t": 84, "fecha": "2026-06-16", "precio": 7511.35, "rt": -0.57, "e2": 0.324946, "sig2": 1.808974, "sig": 1.345, "z": -0.8621, "ysim": -1.1596}, {"t": 85, "fecha": "2026-06-17", "precio": 7420.1, "rt": -1.2223, "e2": 1.493938, "sig2": 1.690123, "sig": 1.3, "z": 0.9056, "ysim": 1.1773}, {"t": 86, "fecha": "2026-06-18", "precio": 7500.58, "rt": 1.0788, "e2": 1.16377, "sig2": 1.705998, "sig": 1.3061, "z": -1.0941, "ysim": -1.429}, {"t": 87, "fecha": "2026-06-22", "precio": 7472.79, "rt": -0.3712, "e2": 0.137784, "sig2": 1.686475, "sig": 1.2986, "z": 0.9276, "ysim": 1.2046}, {"t": 88, "fecha": "2026-06-23", "precio": 7365.46, "rt": -1.4467, "e2": 2.092917, "sig2": 1.567282, "sig": 1.2519, "z": 1.031, "ysim": 1.2907}, {"t": 89, "fecha": "2026-06-24", "precio": 7358.22, "rt": -0.0983, "e2": 0.009672, "sig2": 1.661482, "sig": 1.289, "z": 1.2018, "ysim": 1.5491}, {"t": 90, "fecha": "2026-06-25", "precio": 7357.49, "rt": -0.0099, "e2": 9.8e-05, "sig2": 1.533227, "sig": 1.2382, "z": -0.8573, "ysim": -1.0615}, {"t": 91, "fecha": "2026-06-26", "precio": 7354.02, "rt": -0.0472, "e2": 0.002225, "sig2": 1.423253, "sig": 1.193, "z": -1.7018, "ysim": -2.0303}, {"t": 92, "fecha": "2026-06-29", "precio": 7440.43, "rt": 1.1682, "e2": 1.364584, "sig2": 1.329987, "sig": 1.1533, "z": -0.0198, "ysim": -0.0228}, {"t": 93, "fecha": "2026-06-30", "precio": 7499.36, "rt": 0.7889, "e2": 0.62237, "sig2": 1.386947, "sig": 1.1777, "z": 0.6926, "ysim": 0.8157}, {"t": 94, "fecha": "2026-07-01", "precio": 7483.23, "rt": -0.2153, "e2": 0.046361, "sig2": 1.361142, "sig": 1.1667, "z": 1.0808, "ysim": 1.2609}, {"t": 95, "fecha": "2026-07-02", "precio": 7483.24, "rt": 0.0001, "e2": 0.0, "sig2": 1.281607, "sig": 1.1321, "z": -0.752, "ysim": -0.8513}, {"t": 96, "fecha": "2026-07-06", "precio": 7537.43, "rt": 0.7215, "e2": 0.520623, "sig2": 1.209366, "sig": 1.0997, "z": -0.3715, "ysim": -0.4086}, {"t": 97, "fecha": "2026-07-07", "precio": 7503.85, "rt": -0.4465, "e2": 0.199367, "sig2": 1.200023, "sig": 1.0955, "z": -0.4142, "ysim": -0.4537}, {"t": 98, "fecha": "2026-07-08", "precio": 7482.71, "rt": -0.2821, "e2": 0.079591, "sig2": 1.159957, "sig": 1.077, "z": 0.3695, "ysim": 0.3979}, {"t": 99, "fecha": "2026-07-09", "precio": 7543.64, "rt": 0.811, "e2": 0.657688, "sig2": 1.113922, "sig": 1.0554, "z": 0.6976, "ysim": 0.7363}, {"t": 100, "fecha": "2026-07-10", "precio": 7575.39, "rt": 0.42, "e2": 0.176401, "sig2": 1.132603, "sig": 1.0642, "z": -0.4711, "ysim": -0.5013}];
+
+const EXCEL_FIT = {
+  omega: 0.0000120, alpha: 0.10, beta: 0.85, persistence: 0.95,
+  volDiaria: 1.5492, volAnual: 24.59,
+  volMedia: 1.1454, volMax: 1.5186, volMin: 0.9040,
+  nobs: 100, periodo: "Feb–Jun 2026",
+};
 
 /* ------------------------------------------------------------------ */
 /*  Nav structure — grouped outline for the sidebar                   */
@@ -162,24 +173,24 @@ function SlideQueEs() {
             <span className="acronym-sep"> · </span>
             <span className="acronym-word">Heteroskedasticity</span>
           </div>
-          <p className="que-es-def">El modelo GARCH es un modelo econométrico utilizado para <strong>analizar y pronosticar la volatilidad de una serie temporal</strong>. Su principal característica es que permite que la varianza cambie a lo largo del tiempo, algo que ocurre con frecuencia en variables financieras y económicas.</p>
+          <p className="que-es-def">El modelo GARCH es una especificación econométrica diseñada para modelar y predecir la varianza de series temporales cuyos residuos presentan volatilidad agrupada o cambiante.</p>
           <div className="que-es-contrast">
             <div className="contrast-block contrast-no">
               <div className="contrast-lbl">Regresión clásica</div>
-              <p>Supone que la varianza del error <strong>permanece constante</strong> en el tiempo (homocedasticidad).</p>
+              <p>Supone homocedasticidad: la varianza de los errores permanece constante a lo largo de toda la muestra.</p>
             </div>
             <div className="contrast-arrow">→</div>
             <div className="contrast-block contrast-si">
               <div className="contrast-lbl">Modelo GARCH</div>
-              <p>Reconoce que existen períodos de estabilidad y otros de alta incertidumbre. Permite <strong>estimar el riesgo futuro</strong> de manera más realista.</p>
+              <p>Reconoce que existen periodos de calma y de estrés. Estima la varianza condicional futura de manera dinámica.</p>
             </div>
           </div>
         </div>
 
         <div className="card-grid cols-3 compact">
-          <Card n="01" title="¿Para qué sirve?" tone="blue">Modelar y pronosticar la volatilidad de series financieras, económicas o de cualquier variable con varianza cambiante en el tiempo.</Card>
-          <Card n="02" title="¿Qué captura?">La heterocedasticidad condicional: la varianza del error no es fija sino que evoluciona siguiendo sus propios valores pasados.</Card>
-          <Card n="03" title="¿Por qué es útil?" tone="amber">Permite estimar el riesgo de forma dinámica, lo que es esencial para valoración de activos, gestión de carteras y análisis de riesgo.</Card>
+          <Card n="01" title="Ámbito de aplicación" tone="blue">Modelado de series de tiempo financieras, macroeconómicas o cambiarias con varianza no constante.</Card>
+          <Card n="02" title="Función principal">Capturar la heterocedasticidad condicional: la variabilidad actual depende de shocks pasados.</Card>
+          <Card n="03" title="Utilidad práctica" tone="amber">Cálculo de riesgo dinámico (VaR), optimización de carteras y valoración de opciones financieras.</Card>
         </div>
       </div>
       <PageFoot page="01" />
@@ -189,31 +200,34 @@ function SlideQueEs() {
 
 function SlideHistoria() {
   const hitos = [
-    { year: "1963", color: "faint", title: "Mandelbrot", body: "Documenta que los retornos financieros presentan colas pesadas y agrupamiento de varianza: la variabilidad no es constante." },
-    { year: "1982", color: "blue", title: "ARCH — Robert Engle", body: "Propone el modelo ARCH (Autoregressive Conditional Heteroskedasticity): primera formalización de la varianza condicional dinámica." },
-    { year: "1986", color: "amber", title: "GARCH — Tim Bollerslev", body: "Generaliza el ARCH incorporando rezagos de la propia varianza condicional. El GARCH(1,1) se convierte en estándar de la industria." },
-    { year: "2003", color: "green", title: "Premio Nobel — Robert Engle", body: "La Real Academia Sueca de Ciencias reconoce a Engle con el Nobel de Economía por el desarrollo del modelo ARCH/GARCH." },
-    { year: "Hoy", color: "amber", title: "Estándar global", body: "GARCH y sus extensiones (EGARCH, GJR-GARCH, DCC-GARCH) se usan en banca, gestión de fondos, bancos centrales y academia." },
+    { year: "1963", author: "Mandelbrot", desc: "Evidencia colas pesadas y persistencia de volatilidad en mercados financieros." },
+    { year: "1982", author: "Robert Engle", desc: "Introduce el modelo ARCH, formalizando la dependencia temporal de la varianza condicional." },
+    { year: "1986", author: "Tim Bollerslev", desc: "Generaliza el modelo (GARCH), incorporando la varianza rezagada para mayor parsimonia." },
+    { year: "2003", author: "Premio Nobel", desc: "Otorgado a Robert Engle por su contribución al desarrollo del modelado de volatilidad temporal." },
+    { year: "Actualidad", author: "Estándar global", desc: "Uso generalizado en la gestión de riesgos y optimización de carteras en la industria y academia." }
   ];
   return (
     <div className="slide">
       <Eyebrow n="02">INTRODUCCIÓN</Eyebrow>
       <h2 className="title">Historia del modelo GARCH</h2>
-      <div className="slide-body layout-historia">
-        <p className="lede">Durante muchos años los economistas asumían que la variabilidad de una serie permanecía constante. Al analizar mercados financieros se observó que existían períodos de calma y otros de turbulencia extrema.</p>
-        <div className="timeline">
+      <div className="slide-body layout-historia-clean">
+        <p className="lede">Durante muchos años los economistas asumían que la variabilidad de una serie permanecía constante. Al analizar mercados financieros se observó que existían periodos de calma y otros de turbulencia extrema.</p>
+        <div className="timeline-horizontal">
           {hitos.map((h, i) => (
-            <div className={`timeline-item tl-${h.color}`} key={i}>
-              <div className="tl-year">{h.year}</div>
-              <div className="tl-dot" />
-              <div className="tl-content">
-                <strong>{h.title}</strong>
-                <p>{h.body}</p>
+            <div className="timeline-node" key={i}>
+              <div className="node-year">{h.year}</div>
+              <div className="node-line-marker">
+                <div className="node-dot" />
+                {i < hitos.length - 1 && <div className="node-connector" />}
+              </div>
+              <div className="node-content">
+                <strong>{h.author}</strong>
+                <p>{h.desc}</p>
               </div>
             </div>
           ))}
         </div>
-        <p className="pull-quote">Actualmente GARCH es uno de los modelos más utilizados para analizar riesgo financiero a nivel mundial.</p>
+        <p className="pull-quote">GARCH es la evolución natural de los modelos autoregresivos aplicados al análisis del riesgo financiero.</p>
       </div>
       <PageFoot page="02" />
     </div>
@@ -222,50 +236,52 @@ function SlideHistoria() {
 
 function SlideVolatilidad() {
   const ejemplos = [
-    ["📦", "Precio del petróleo", "Alta volatilidad — sensible a geopolítica y oferta global."],
-    ["💵", "Precio del dólar", "Volatilidad media — afectada por tasas de interés y política monetaria."],
-    ["📈", "Acciones", "Variable — empresas tecnológicas mucho más volátiles que empresas de servicios."],
-    ["₿", "Bitcoin", "Muy alta volatilidad — movimientos de ±10% en un solo día son frecuentes."],
-    ["🏦", "Tasas de interés", "Generalmente baja — pero aumenta en períodos de crisis o ajuste monetario."],
-    ["🌽", "Materias primas", "Alta volatilidad — dependiente de clima, cosechas y demanda mundial."],
+    { asset: "Precio del petróleo", level: "Alto", desc: "Sensible a crisis geopolíticas, shocks de oferta y variaciones de demanda global." },
+    { asset: "Tipo de cambio (Dólar)", level: "Medio", desc: "Influenciado por diferenciales de tasas de interés y políticas macroeconómicas." },
+    { asset: "Acciones bursátiles", level: "Alto", desc: "Sujeto a expectativas de beneficios corporativos y shocks de sentimiento del mercado." },
+    { asset: "Criptoactivos (Bitcoin)", level: "Muy alto", desc: "Mercados jóvenes con alta especulación, desregulados y expuestos a fuertes movimientos." },
+    { asset: "Tasas de interés", level: "Bajo", desc: "Ajustadas por bancos centrales; volatilidad acotada excepto en periodos de transición de política." },
+    { asset: "Materias primas (Cacao)", level: "Alto", desc: "Afectado por factores climáticos, cuellos de botella en la oferta y especulación." }
   ];
   return (
     <div className="slide">
       <Eyebrow n="03">INTRODUCCIÓN</Eyebrow>
       <h2 className="title">¿Qué es la volatilidad?</h2>
-      <div className="slide-body layout-volatilidad">
+      <div className="slide-body layout-volatilidad-clean">
         <div className="vol-definition">
           <div className="vol-def-text">
-            <p>La <strong>volatilidad</strong> representa el grado de variación de una variable respecto al tiempo.</p>
+            <p>La volatilidad representa el grado de variación o dispersión de una serie temporal respecto a su media en un periodo determinado.</p>
             <div className="vol-levels">
               <div className="vol-level vol-low">
                 <div className="vol-level-bar" />
                 <div>
                   <strong>Baja volatilidad</strong>
-                  <p>La variable cambia muy poco entre un período y otro. Comportamiento estable y predecible.</p>
+                  <p>La variable cambia muy poco entre periodos; comportamiento estable y predecible.</p>
                 </div>
               </div>
               <div className="vol-level vol-high">
                 <div className="vol-level-bar" />
                 <div>
                   <strong>Alta volatilidad</strong>
-                  <p>La variable presenta cambios bruscos y frecuentes. Comportamiento incierto y difícil de predecir.</p>
+                  <p>La variable presenta cambios bruscos y frecuentes; incertidumbre y riesgo elevado.</p>
                 </div>
               </div>
             </div>
             <div className="vol-conclusion">
-              <span>La volatilidad es importante porque permite <strong>medir el riesgo</strong> de una inversión o activo.</span>
+              <span>La volatilidad es importante porque permite medir y cuantificar el riesgo de los activos.</span>
             </div>
           </div>
         </div>
         <div className="vol-examples">
           <div className="vol-ex-label">Ejemplos de variables con distinta volatilidad</div>
-          <div className="vol-ex-grid">
-            {ejemplos.map(([icon, name, desc]) => (
-              <div className="vol-ex-card" key={name}>
-                <span className="vol-ex-icon">{icon}</span>
-                <strong>{name}</strong>
-                <p>{desc}</p>
+          <div className="vol-ex-grid-clean">
+            {ejemplos.map((e, idx) => (
+              <div className="vol-item-clean" key={idx}>
+                <div className="vol-item-top">
+                  <strong>{e.asset}</strong>
+                  <span className={`vol-badge level-${e.level.toLowerCase().replace(" ", "-")}`}>{e.level}</span>
+                </div>
+                <p>{e.desc}</p>
               </div>
             ))}
           </div>
@@ -278,38 +294,42 @@ function SlideVolatilidad() {
 
 function SlideNombre() {
   const letras = [
-    { letter: "G", word: "Generalized", color: "blue",  exp: "Porque generaliza el modelo ARCH original de Engle (1982), añadiendo rezagos de la propia varianza condicional." },
-    { letter: "A", word: "Autoregressive", color: "amber", exp: "Porque la varianza condicional depende de sus propios valores pasados: la volatilidad de ayer explica la de hoy." },
-    { letter: "R", word: "—", color: "", exp: "" },
-    { letter: "C", word: "Conditional", color: "green", exp: "Porque la varianza se calcula condicionada a la información disponible hasta el período anterior (filtración Ωₜ₋₁)." },
-    { letter: "H", word: "Heteroskedasticity", color: "blue", exp: "Porque la varianza cambia con el tiempo: no es constante (homocedasticidad) sino variable (heterocedasticidad)." },
-  ].filter(l => l.word !== "—");
+    { letter: "G", term: "Generalized", definition: "Porque generaliza el modelo ARCH incorporando los rezagos de la propia varianza condicional." },
+    { letter: "A", term: "Autoregressive", definition: "Porque los valores de varianza actuales dependen y se correlacionan con sus propios valores pasados." },
+    { letter: "C", term: "Conditional", definition: "Porque la varianza estimada depende del conjunto de información acumulada hasta el periodo anterior." },
+    { letter: "H", term: "Heteroskedasticity", definition: "Porque la varianza cambia con el tiempo, reconociendo la variabilidad de la serie de datos." }
+  ];
 
   const problemas = [
-    ["01", "Homocedasticidad supuesta", "Los modelos clásicos (MCO, ARIMA) asumen que todos los errores tienen la misma varianza, lo que raramente se cumple."],
-    ["02", "Períodos de alta incertidumbre", "Los mercados presentan: períodos tranquilos, períodos de crisis, cambios repentinos y alta incertidumbre."],
-    ["03", "Varianza cambiante", "Como consecuencia de lo anterior, la varianza cambia continuamente. GARCH fue creado precisamente para modelar esa variabilidad."],
+    { title: "Homocedasticidad clásica", desc: "Los modelos tradicionales asumen varianza constante, ignorando la realidad de los mercados." },
+    { title: "Periodos de crisis bursátiles", desc: "Los retornos financieros presentan agrupamientos de alta volatilidad persistente en periodos de estrés." },
+    { title: "Varianza continuamente móvil", desc: "La incertidumbre no es estática; GARCH actualiza el pronóstico de riesgo en base a nuevos shocks." }
   ];
 
   return (
     <div className="slide">
       <Eyebrow n="04">INTRODUCCIÓN</Eyebrow>
       <h2 className="title">¿Por qué se llama GARCH? — El acrónimo</h2>
-      <div className="slide-body layout-nombre">
-        <div className="garch-acronym-grid">
+      <div className="slide-body layout-nombre-clean">
+        <div className="acronym-table">
           {letras.map((l) => (
-            <div className={`garch-letter-card garch-${l.color}`} key={l.letter}>
-              <div className="garch-big-letter">{l.letter}</div>
-              <div className="garch-word">{l.word}</div>
-              <p className="garch-exp">{l.exp}</p>
+            <div className="acronym-row" key={l.letter}>
+              <div className="acronym-letter">{l.letter}</div>
+              <div className="acronym-term">{l.term}</div>
+              <div className="acronym-def">{l.definition}</div>
             </div>
           ))}
         </div>
 
-        <div className="het-block">
-          <div className="het-label">Heterocedasticidad — el fenómeno que GARCH modela</div>
-          <div className="card-grid cols-3 compact">
-            {problemas.map(([n, t, b]) => <Card key={n} n={n} title={t}>{b}</Card>)}
+        <div className="het-section-clean">
+          <div className="section-label">Problemas que resuelve el modelo</div>
+          <div className="problems-grid">
+            {problemas.map((p, i) => (
+              <div className="problem-card" key={i}>
+                <strong>{p.title}</strong>
+                <p>{p.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -319,10 +339,9 @@ function SlideNombre() {
 }
 
 function SlideMotivacion() {
-
   return (
     <div className="slide">
-      <Eyebrow n="01">MOTIVACIÓN</Eyebrow>
+      <Eyebrow n="05">MOTIVACIÓN</Eyebrow>
       <h2 className="title">¿Por qué modelar la volatilidad?</h2>
       <div className="slide-body layout-chart">
         <div className="chart-wrap">
@@ -355,7 +374,7 @@ function SlideMotivacion() {
         </div>
         <p className="pull-quote">La volatilidad llega en ráfagas — cambios grandes siguen a cambios grandes.</p>
       </div>
-      <PageFoot page="01" />
+      <PageFoot page="05" />
     </div>
   );
 }
@@ -370,7 +389,7 @@ function SlideRegularidades() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="02">REGULARIDADES EMPÍRICAS</Eyebrow>
+      <Eyebrow n="06">REGULARIDADES EMPÍRICAS</Eyebrow>
       <h2 className="title">Hechos estilizados de los retornos financieros</h2>
       <div className="slide-body layout-compact">
         <p className="lede">Documentados desde Mandelbrot (1963) y Fama (1965); ningún modelo de varianza constante puede capturarlos.</p>
@@ -384,7 +403,7 @@ function SlideRegularidades() {
           <span>Se necesita un modelo donde la varianza sea aleatoria y evolucione condicional al pasado: ARCH / GARCH.</span>
         </div>
       </div>
-      <PageFoot page="02" />
+      <PageFoot page="06" />
     </div>
   );
 }
@@ -392,7 +411,7 @@ function SlideRegularidades() {
 function SlideARCH() {
   return (
     <div className="slide">
-      <Eyebrow n="03">EL ANTECEDENTE</Eyebrow>
+      <Eyebrow n="07">EL ANTECEDENTE</Eyebrow>
       <h2 className="title">Modelo ARCH — Engle (1982)</h2>
       <div className="slide-body layout-model">
         <p className="lede">Engle propuso que la varianza condicional de hoy dependa de los choques cuadráticos del pasado. Primera formalización del agrupamiento de volatilidad; Premio Nobel de Economía 2003.</p>
@@ -407,7 +426,7 @@ function SlideARCH() {
           <Card title="Su limitación" tone="amber">Requiere un orden q muy alto (decenas de rezagos) para capturar la persistencia: estimación pesada e inestable. Esto motiva el GARCH.</Card>
         </div>
       </div>
-      <PageFoot page="03" />
+      <PageFoot page="07" />
     </div>
   );
 }
@@ -415,7 +434,7 @@ function SlideARCH() {
 function SlideGARCH() {
   return (
     <div className="slide">
-      <Eyebrow n="04">EL MODELO CENTRAL</Eyebrow>
+      <Eyebrow n="08">EL MODELO CENTRAL</Eyebrow>
       <h2 className="title">GARCH(p, q) — Bollerslev (1986)</h2>
       <div className="slide-body layout-model">
         <p className="lede">Bollerslev (alumno de Engle) generalizó el ARCH añadiendo rezagos de la propia varianza condicional, igual que un ARMA generaliza a un AR puro.</p>
@@ -430,7 +449,7 @@ function SlideGARCH() {
           <Card title="Suavizamiento">Las varianzas rezagadas actúan como término suavizador de la volatilidad estimada.</Card>
         </div>
       </div>
-      <PageFoot page="04" />
+      <PageFoot page="08" />
     </div>
   );
 }
@@ -438,7 +457,7 @@ function SlideGARCH() {
 function SlideGARCH11() {
   return (
     <div className="slide">
-      <Eyebrow n="05">EL CASO DE REFERENCIA</Eyebrow>
+      <Eyebrow n="09">EL CASO DE REFERENCIA</Eyebrow>
       <h2 className="title">GARCH(1,1)</h2>
       <div className="slide-body layout-model">
         <p className="lede">Tres parámetros bastan para ajustar la mayoría de las series financieras reales.</p>
@@ -455,227 +474,239 @@ function SlideGARCH11() {
 
         <p className="pull-quote">En la práctica: α₁ ≈ 0.05–0.15 y β₁ ≈ 0.80–0.95, con α₁ + β₁ cercano a 1 — la volatilidad es muy persistente.</p>
       </div>
-      <PageFoot page="05" />
+      <PageFoot page="09" />
     </div>
   );
-}
-
-function SlideTeoria() {
+}function SlideTeoria() {
   const props = [
-    ["01", "Estacionariedad", "Σαᵢ + Σβⱼ < 1 garantiza varianza incondicional estable. Si no se cumple, la volatilidad no regresa a un nivel fijo."],
-    ["02", "Persistencia", "α₁ + β₁ mide cuánto tarda en disiparse un choque de volatilidad. Valores cercanos a 1 indican alta persistencia."],
-    ["03", "Colas pesadas (leptocurtosis)", "La mezcla de varianzas cambiantes genera más eventos extremos que la distribución normal, capturando la leptocurtosis observada."],
-    ["04", "Reversión a la media", "La varianza incondicional de largo plazo es σ̄² = ω / (1 − Σαᵢ − Σβⱼ). La volatilidad fluctúa pero regresa a ese nivel."],
-    ["05", "Representación ARMA", "y²ₜ sigue un proceso ARMA(max(p,q), p). La ACF/PACF de los cuadrados de los residuos ayuda a seleccionar el orden p y q."],
+    { n: "01", title: "Estacionariedad en covarianza", body: "La suma de los coeficientes (Σαᵢ + Σβⱼ) debe ser estrictamente menor a 1 para garantizar que la varianza incondicional sea finita." },
+    { n: "02", title: "Persistencia del shock", body: "La suma α₁ + β₁ mide la tasa de decaimiento de la volatilidad. Si se aproxima a 1, la volatilidad disipa muy lentamente en el tiempo." },
+    { n: "03", title: "Colas pesadas (Leptocurtosis)", body: "Incluso si los shocks estandarizados son normales, la variabilidad temporal en el modelo induce colas anchas en los retornos." },
+    { n: "04", title: "Reversión a la media", body: "El proceso tiende a retornar a su nivel de varianza incondicional de largo plazo σ̄² = ω / (1 − Σαᵢ − Σβⱼ)." },
+    { n: "05", title: "Estructura ARMA en cuadrados", body: "Los retornos cuadráticos siguen un proceso equivalente a ARMA, lo que valida el análisis de correlogramas de cuadrados." }
   ];
   return (
     <div className="slide">
-      <Eyebrow n="06">TEORÍA</Eyebrow>
+      <Eyebrow n="10">TEORÍA</Eyebrow>
       <h2 className="title">Propiedades estadísticas del proceso GARCH</h2>
-      <div className="slide-body layout-theory">
-        <div className="theory-hero">
-          <div className="theory-label">Condición de estacionariedad</div>
+      <div className="slide-body layout-theory-clean">
+        <div className="theory-hero-clean">
+          <div className="theory-label">Condición fundamental</div>
           <div className="theory-formula">Σαᵢ + Σβⱼ &lt; 1</div>
-          <p>Si se cumple, la volatilidad fluctúa pero regresa a un nivel de largo plazo estable.</p>
-          <div className="theory-mini-eq">σ̄² = ω / (1 − Σαᵢ − Σβⱼ)</div>
+          <p>Esta restricción paramétrica asegura que la varianza condicional no diverja y el proceso sea estacionario.</p>
+          <div className="theory-mini-eq">Varianza de largo plazo: σ̄² = ω / (1 − Σαᵢ − Σβⱼ)</div>
         </div>
 
-        <div className="theory-list">
-          {props.map(([n, title, body]) => (
-            <div className="theory-item" key={n}>
-              <span>{n}</span>
-              <div>
-                <strong>{title}</strong>
-                <p>{body}</p>
+        <div className="theory-table-clean">
+          {props.map((p) => (
+            <div className="theory-row-clean" key={p.n}>
+              <span className="row-num">{p.n}</span>
+              <div className="row-main">
+                <strong>{p.title}</strong>
+                <p>{p.body}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="persistence-strip">
-          <span>Estacionario (α+β &lt; 1)</span>
-          <div className="persistence-bar"><i /></div>
-          <span>IGARCH: choques permanentes (α+β = 1)</span>
+        <div className="persistence-strip-clean">
+          <span>Régimen Estacionario (Suma &lt; 1)</span>
+          <div className="persistence-bar-clean"><i /></div>
+          <span>Modelo IGARCH (Suma = 1)</span>
         </div>
       </div>
-      <PageFoot page="06" />
+      <PageFoot page="10" />
     </div>
   );
 }
 
 function SlideFormulas() {
+  const params = [
+    { sym: "ω", title: "Varianza incondicional base", desc: "Parámetro constante de largo plazo. Requiere ser strictly positivo." },
+    { sym: "α", title: "Efecto ARCH (Reacción)", desc: "Mide el impacto de los shocks de corto plazo del periodo anterior (residuos al cuadrado)." },
+    { sym: "β", title: "Efecto GARCH (Persistencia)", desc: "Mide la memoria o persistencia de la varianza condicional de periodos anteriores." },
+    { sym: "ε²", title: "Shock cuadrático rezagado", desc: "Sorpresa de mercado observada en el instante anterior." },
+    { sym: "σ²", title: "Varianza rezagada", desc: "Componente suavizador que representa la volatilidad anterior predicha." }
+  ];
   return (
     <div className="slide">
-      <Eyebrow n="07">TEORÍA</Eyebrow>
+      <Eyebrow n="11">TEORÍA</Eyebrow>
       <h2 className="title">Fórmulas del modelo GARCH y sus parámetros</h2>
       <div className="slide-body layout-model">
         <p className="lede">El modelo GARCH(1,1) se especifica mediante tres ecuaciones relacionadas entre sí. Cada componente cumple un rol distinto en la captura de la dinámica de la volatilidad.</p>
 
-        <div className="formulas-stack">
-          <div className="formula-row">
-            <div className="formula-tag tone-blue">Media</div>
-            <div className="formula-content">
+        <div className="formulas-stack-clean">
+          <div className="formula-item">
+            <span className="formula-type media">Media Condicional</span>
+            <div className="formula-math">
               <div className="eq-main">rₜ = μ + εₜ</div>
-              <p>El retorno en el período t es igual a la media condicional μ más un término de error εₜ.</p>
+              <p>El retorno real se define como el promedio condicional más una perturbación aleatoria.</p>
             </div>
           </div>
-          <div className="formula-row">
-            <div className="formula-tag tone-amber">Error</div>
-            <div className="formula-content">
+          <div className="formula-item">
+            <span className="formula-type error">Término de Error</span>
+            <div className="formula-math">
               <div className="eq-main">εₜ = σₜ zₜ ,&nbsp;&nbsp; zₜ ~ i.i.d. N(0, 1)</div>
-              <p>El error se descompone en la volatilidad condicional σₜ y una innovación estándar zₜ con media cero y varianza uno.</p>
+              <p>El error se modela como el producto de la volatilidad condicional y un shock estandarizado.</p>
             </div>
           </div>
-          <div className="formula-row">
-            <div className="formula-tag tone-green">Varianza</div>
-            <div className="formula-content">
+          <div className="formula-item">
+            <span className="formula-type varianza">Varianza Condicional</span>
+            <div className="formula-math">
               <div className="eq-main">σ²ₜ = ω + α ε²ₜ₋₁ + β σ²ₜ₋₁</div>
-              <p>La varianza condicional del período t depende de la constante ω, del choque cuadrático pasado (término ARCH) y de la varianza rezagada (término GARCH).</p>
+              <p>Varianza móvil para el periodo t, ponderada por la constante y rezagos de shocks y varianzas.</p>
             </div>
           </div>
         </div>
 
-        <div className="card-grid cols-5 compact params-grid">
-          <div className="param-doc-card"><span className="param-sym">ω</span><strong>Nivel base</strong><p>Volatilidad promedio de largo plazo. Debe ser positiva (ω &gt; 0).</p></div>
-          <div className="param-doc-card"><span className="param-sym">α</span><strong>Reacción (ARCH)</strong><p>Efecto de las noticias recientes (ε²ₜ₋₁) sobre la volatilidad. α ≥ 0.</p></div>
-          <div className="param-doc-card"><span className="param-sym">β</span><strong>Persistencia (GARCH)</strong><p>Memoria de la volatilidad pasada (σ²ₜ₋₁). β ≥ 0.</p></div>
-          <div className="param-doc-card"><span className="param-sym">ε²</span><strong>Choque pasado</strong><p>Cuadrado del residuo del período anterior. Representa la "sorpresa" del mercado.</p></div>
-          <div className="param-doc-card"><span className="param-sym">σ²</span><strong>Varianza pasada</strong><p>Varianza condicional del período anterior. Actúa como suavizador de largo plazo.</p></div>
+        <div className="params-table-clean">
+          {params.map((p) => (
+            <div className="param-row-clean" key={p.sym}>
+              <span className="param-symbol">{p.sym}</span>
+              <div className="param-info">
+                <strong>{p.title}</strong>
+                <p>{p.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-      <PageFoot page="07" />
+      <PageFoot page="11" />
     </div>
   );
 }
 
 function SlideHipotesis() {
   const supuestos = [
-    ["01", "Estacionariedad", "La serie de retornos debe ser estacionaria (sin tendencia ni raíz unitaria)."],
-    ["02", "Heterocedasticidad", "Debe existir heterocedasticidad condicional: la varianza no es constante en el tiempo."],
-    ["03", "Errores con media cero", "Los errores εₜ deben tener media condicional igual a cero: E[εₜ | Ωₜ₋₁] = 0."],
-    ["04", "ω > 0", "La constante de la ecuación de varianza debe ser estrictamente positiva para garantizar σ²ₜ > 0."],
-    ["05", "α ≥ 0, β ≥ 0", "Los coeficientes ARCH y GARCH deben ser no negativos para asegurar varianza positiva."],
-    ["06", "α + β < 1", "La suma de parámetros debe ser menor a 1 para garantizar estabilidad (varianza finita de largo plazo)."],
+    { n: "01", title: "Estacionariedad débil", body: "La serie original de retornos debe ser estacionaria para evitar regresiones espurias." },
+    { n: "02", title: "Heterocedasticidad condicional", body: "Existencia comprobada de autocorrelación en los residuos cuadráticos de la media." },
+    { n: "03", title: "Media condicional nula", body: "El término de error debe poseer una media esperada igual a cero condicionada al pasado." },
+    { n: "04", title: "Parámetros positivos", body: "Restricciones de no negatividad: ω > 0, α ≥ 0, β ≥ 0 para garantizar que la varianza sea positiva." },
+    { n: "05", title: "Estabilidad del sistema", body: "La suma de los coeficientes de varianza debe cumplir la condición α + β < 1." }
   ];
   return (
     <div className="slide">
-      <Eyebrow n="08">TEORÍA</Eyebrow>
+      <Eyebrow n="12">TEORÍA</Eyebrow>
       <h2 className="title">Hipótesis ARCH-LM y supuestos del modelo</h2>
-      <div className="slide-body layout-hipotesis">
-        <div className="hypothesis-block">
-          <div className="hyp-panel hyp-null">
-            <div className="hyp-badge">H₀</div>
-            <strong>Hipótesis nula</strong>
-            <ul>
-              <li>No existen efectos ARCH en los residuos.</li>
-              <li>La varianza de los errores permanece constante (homocedasticidad).</li>
-            </ul>
+      <div className="slide-body layout-hipotesis-clean">
+        <div className="hypothesis-row">
+          <div className="hyp-card h0">
+            <span className="card-label">Hipótesis Nula (H₀)</span>
+            <strong>Homocedasticidad</strong>
+            <p>No existen efectos ARCH en los residuos. La varianza de la perturbación es constante en el tiempo.</p>
           </div>
-          <div className="hyp-arrow">→</div>
-          <div className="hyp-panel hyp-alt">
-            <div className="hyp-badge">H₁</div>
-            <strong>Hipótesis alternativa</strong>
-            <ul>
-              <li>Sí existen efectos ARCH en los residuos.</li>
-              <li>La varianza cambia con el tiempo (heterocedasticidad condicional).</li>
-            </ul>
+          <div className="hyp-card h1">
+            <span className="card-label">Hipótesis Alternativa (H₁)</span>
+            <strong>Heterocedasticidad Condicional</strong>
+            <p>Existen efectos ARCH. La varianza de los errores cambia a lo largo de la muestra condicionado al pasado.</p>
           </div>
-          <div className="hyp-arrow">→</div>
-          <div className="hyp-panel hyp-decision">
-            <div className="hyp-badge">Decisión</div>
-            <strong>Regla de decisión</strong>
-            <ul>
-              <li>Si p-valor &lt; 0.05, se rechaza H₀.</li>
-              <li>Se concluye que existe heterocedasticidad condicional.</li>
-              <li>Procede estimar un modelo GARCH.</li>
-            </ul>
+          <div className="hyp-card decision">
+            <span className="card-label">Regla de Decisión</span>
+            <strong>Rechazo de H₀</strong>
+            <p>Si el p-valor de la prueba ARCH-LM es menor al nivel de significancia (α = 0.05), se concluye que el modelo GARCH es adecuado.</p>
           </div>
         </div>
 
-        <div className="supuestos-label">Supuestos formales del modelo GARCH</div>
-        <div className="card-grid facts compact">
-          {supuestos.map(([n, title, body]) => (
-            <Card key={n} n={n} title={title}>{body}</Card>
+        <div className="supuestos-header">Supuestos del modelo GARCH</div>
+        <div className="supuestos-grid-clean">
+          {supuestos.map((s) => (
+            <div className="supuesto-item-clean" key={s.n}>
+              <span className="supuesto-num">{s.n}</span>
+              <div className="supuesto-main">
+                <strong>{s.title}</strong>
+                <p>{s.body}</p>
+              </div>
+            </div>
           ))}
         </div>
-        <p className="pull-quote">Estos supuestos aseguran que el modelo sea matemáticamente válido y que las estimaciones sean estadísticamente confiables.</p>
       </div>
-      <PageFoot page="08" />
+      <PageFoot page="12" />
     </div>
   );
 }
 
 function SlideInterpretacion() {
   const cases = [
-    { label: "α alto", color: "amber", icon: "⚡", title: "Alta reactividad", body: "La volatilidad responde de forma rápida e intensa a las noticias recientes del mercado. Un choque hoy provoca un salto inmediato en la volatilidad de mañana.", example: "Mercados en crisis, activos especulativos." },
-    { label: "β alto", color: "blue",  icon: "🔁", title: "Alta persistencia", body: "La volatilidad permanece elevada durante muchos períodos después de un choque. Una crisis puede afectar la varianza condicional durante semanas o meses.", example: "Índices bursátiles, tasas de cambio." },
-    { label: "α + β ≈ 1", color: "red", icon: "♾️", title: "Volatilidad integrada (IGARCH)", body: "La volatilidad es altamente persistente y los choques tardan extremadamente en disiparse. Si α + β = 1 exactamente, la varianza incondicional es infinita.", example: "Proceso cerca de raíz unitaria en varianza." },
-    { label: "α + β < 1", color: "green", icon: "✓", title: "Proceso estacionario", body: "El modelo es covarianza-estacionario. La volatilidad fluctúa alrededor de una media de largo plazo σ̄² = ω / (1 − α − β) a la cual regresa.", example: "Requisito para estimación e inferencia válidas." },
+    { label: "α Elevado", color: "amber", title: "Alta Reactividad", body: "La volatilidad responde rápidamente ante shocks recientes del mercado. Los picos de varianza son abruptos ante nuevas noticias.", example: "Comportamiento en activos altamente especulativos." },
+    { label: "β Elevado", color: "blue", title: "Alta Persistencia", body: "La volatilidad presenta memoria larga. Los periodos de incertidumbre alta persisten y tardan en retornar al nivel promedio.", example: "Comportamiento típico de índices bursátiles generales." },
+    { label: "α + β ≈ 1", color: "red", title: "Volatilidad Integrada (IGARCH)", body: "Los impactos sobre la volatilidad son permanentes. La varianza condicional de largo plazo no converge a un nivel finito.", example: "Mercados financieros bajo estrés continuo." },
+    { label: "α + β < 1", color: "green", title: "Proceso Estacionario", body: "El modelo es estable y converge gradualmente hacia su volatilidad de largo plazo σ̄² = ω / (1 - α - β).", example: "Especificación requerida para predicción de riesgo estándar." }
   ];
   return (
     <div className="slide">
-      <Eyebrow n="09">TEORÍA</Eyebrow>
+      <Eyebrow n="13">TEORÍA</Eyebrow>
       <h2 className="title">Interpretación de los parámetros del modelo</h2>
-      <div className="slide-body layout-interp">
+      <div className="slide-body layout-interp-clean">
         <p className="lede">La lectura conjunta de α y β determina el perfil de volatilidad: qué tan rápido reacciona a noticias y qué tan largo es su efecto en el tiempo.</p>
-        <div className="interp-grid">
+        <div className="interp-grid-clean">
           {cases.map((c) => (
-            <div className={`interp-card tone-${c.color}`} key={c.label}>
-              <div className="interp-icon">{c.icon}</div>
-              <div className="interp-label">{c.label}</div>
+            <div className={`interp-card-clean color-${c.color}`} key={c.label}>
+              <span className="interp-label">{c.label}</span>
               <strong>{c.title}</strong>
               <p>{c.body}</p>
-              <em>{c.example}</em>
+              <em className="interp-example">{c.example}</em>
             </div>
           ))}
         </div>
-        <div className="interp-summary">
-          <div className="interp-row"><span className="interp-param">α pequeño, β grande</span><span>→ volatilidad lenta en reaccionar pero muy persistente</span></div>
-          <div className="interp-row"><span className="interp-param">α grande, β pequeño</span><span>→ volatilidad reactiva pero de corta memoria</span></div>
-          <div className="interp-row"><span className="interp-param">α + β cercano a 1</span><span>→ mercados financieros típicos: alta persistencia de riesgo</span></div>
+        <div className="interp-table-summary">
+          <div className="table-row-clean">
+            <span className="param-comb">α Bajo, β Alto</span>
+            <span>Efecto de suavizado predominante: volatilidad estable con memoria larga ante eventos pasados.</span>
+          </div>
+          <div className="table-row-clean">
+            <span className="param-comb">α Alto, β Bajo</span>
+            <span>Efecto de reacción inmediata predominante: picos rápidos de riesgo pero disipación veloz.</span>
+          </div>
+          <div className="table-row-clean">
+            <span className="param-comb">α + β Cercano a 1</span>
+            <span>Comportamiento típico en finanzas: alta persistencia agrupada de volatilidad (Volatility Clustering).</span>
+          </div>
         </div>
       </div>
-      <PageFoot page="09" />
+      <PageFoot page="13" />
     </div>
   );
 }
 
 function SlideDistribuciones() {
   const dists = [
-    { name: "Normal N(0,1)", sym: "𝒩", tone: "blue", pros: "Fácil de implementar. Estimación por MV estándar (QML consistente).", cons: "Subestima la probabilidad de eventos extremos (colas delgadas).", uso: "Series sin fat-tails pronunciados o como primera aproximación." },
-    { name: "t de Student", sym: "𝓣", tone: "amber", pros: "Colas más pesadas. Captura mejor los eventos raros e intensos.", cons: "Requiere estimar un parámetro extra (grados de libertad ν).", uso: "Retornos financieros con leptocurtosis moderada o alta." },
-    { name: "GED (Gen. Error Dist.)", sym: "𝒢", tone: "green", pros: "Flexible: incluye normal (ν=2) y Laplace (ν=1) como casos especiales.", cons: "Menos común; interpretación del parámetro de forma menos intuitiva.", uso: "Distribuciones con forma de cola distinta a la t-Student." },
+    { name: "Normal estándar N(0,1)", pros: "Facilidad de cómputo y convergencia rápida del estimador.", cons: "Subestima sistemáticamente la probabilidad de ocurrencia de shocks extremos (colas delgadas).", uso: "Series temporales con colas moderadas o bajo Quasi-Máxima Verosimilitud (QML)." },
+    { name: "t de Student condicional", pros: "Incorpora colas pesadas endógenas y modela adecuadamente la curtosis financiera.", cons: "Requiere estimar un parámetro adicional para los grados de libertad.", uso: "Series de retornos bursátiles y de tipos de cambio de alta frecuencia." },
+    { name: "Distribución de Error Generalizado (GED)", pros: "Alta flexibilidad matemática, incluye la distribución normal y la de Laplace como casos específicos.", cons: "Estimación computacional más costosa y menor familiaridad interpretativa.", uso: "Series financieras con colas pesadas que no se ajustan de manera óptima a la t de Student." }
   ];
   return (
     <div className="slide">
-      <Eyebrow n="10">TEORÍA</Eyebrow>
+      <Eyebrow n="14">TEORÍA</Eyebrow>
       <h2 className="title">Distribuciones de los errores estandarizados</h2>
-      <div className="slide-body layout-dists">
-        <p className="lede">La elección de la distribución de zₜ afecta la función de log-verosimilitud y la capacidad del modelo para capturar eventos extremos.</p>
-
-        <Eq note="El supuesto base del GARCH es innovaciones i.i.d. con media cero y varianza unitaria">
-          <div>εₜ = σₜ zₜ</div>
+      <div className="slide-body layout-dists-clean">
+        <p className="lede">Para estimar el modelo mediante verosimilitud, se debe asumir una distribución de probabilidad para el residuo estandarizado.</p>
+        
+        <Eq note="El supuesto básico de GARCH requiere que z_t sea una variable independiente e idénticamente distribuida.">
           <div className="eq-main">zₜ ~ i.i.d. D(0, 1)</div>
         </Eq>
 
-        <div className="dist-grid">
+        <div className="dists-table">
+          <div className="dists-table-header">
+            <div>Distribución</div>
+            <div>Ventajas principales</div>
+            <div>Limitaciones</div>
+            <div>Aplicación típica</div>
+          </div>
           {dists.map((d) => (
-            <div className={`dist-card tone-${d.tone}`} key={d.name}>
-              <div className="dist-sym">{d.sym}</div>
-              <div className="dist-name">{d.name}</div>
-              <div className="dist-row"><span className="dist-lbl">Ventaja</span><p>{d.pros}</p></div>
-              <div className="dist-row"><span className="dist-lbl">Limitación</span><p>{d.cons}</p></div>
-              <div className="dist-row"><span className="dist-lbl">Uso</span><p>{d.uso}</p></div>
+            <div className="dists-table-row" key={d.name}>
+              <div className="dist-col-name">{d.name}</div>
+              <div>{d.pros}</div>
+              <div>{d.cons}</div>
+              <div>{d.uso}</div>
             </div>
           ))}
         </div>
-
-        <p className="pull-quote">Cuando existen datos extremos frecuentes, la t-Student o la GED representan mejor los eventos poco frecuentes pero muy intensos.</p>
       </div>
-      <PageFoot page="10" />
+      <PageFoot page="14" />
     </div>
   );
 }
+
 
 function SlideMetodologia() {
   const steps = [
@@ -686,7 +717,7 @@ function SlideMetodologia() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="07">METODOLOGÍA</Eyebrow>
+      <Eyebrow n="15">METODOLOGÍA</Eyebrow>
       <h2 className="title">Estimación y diagnóstico</h2>
       <div className="slide-body layout-method">
         <div className="method-flow">
@@ -719,7 +750,7 @@ function SlideMetodologia() {
           </div>
         </div>
       </div>
-      <PageFoot page="11" />
+      <PageFoot page="15" />
     </div>
   );
 }
@@ -735,7 +766,7 @@ function SlideAplicaciones() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="08">EN LA PRÁCTICA</Eyebrow>
+      <Eyebrow n="16">EN LA PRÁCTICA</Eyebrow>
       <h2 className="title">Aplicaciones del marco GARCH</h2>
       <div className="slide-body layout-apps">
         <p className="lede">GARCH se usa cuando el riesgo cambia en el tiempo y la volatilidad no puede tratarse como una constante.</p>
@@ -749,7 +780,7 @@ function SlideAplicaciones() {
           ))}
         </div>
       </div>
-      <PageFoot page="12" />
+      <PageFoot page="16" />
     </div>
   );
 }
@@ -993,15 +1024,15 @@ function LiveGarchLab({ onClose }) {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={labSeries} margin={{ top: 18, right: 16, left: -6, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="liveGarchGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--amber)" stopOpacity={0.34} />
+                  <linearGradient id="liveLabGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--amber)" stopOpacity={0.3} />
                     <stop offset="100%" stopColor="var(--amber)" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="h" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 10, fontFamily: "IBM Plex Mono, monospace" }} axisLine={false} tickLine={false} />
-                <YAxis hide domain={["auto", "auto"]} />
-                <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 12, fontFamily: "IBM Plex Mono, monospace", fontSize: 12, color: "var(--ink)" }} formatter={(v) => [Number(v).toFixed(5), "Volatilidad"]} />
-                <Area type="monotone" dataKey="vol" stroke="var(--amber)" strokeWidth={2.2} fill="url(#liveGarchGrad)" isAnimationActive={false} dot={false} />
+                <YAxis hide domain={[0, "auto"]} />
+                <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 12, fontFamily: "IBM Plex Mono, monospace", fontSize: 12, color: "var(--ink)" }} formatter={(v) => [v.toFixed(4), "Volatilidad"]} />
+                <Area type="monotone" dataKey="vol" stroke="var(--amber)" strokeWidth={2} fill="url(#liveLabGrad)" isAnimationActive={false} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -1016,7 +1047,7 @@ function SlideBalance() {
     "Captura el agrupamiento de volatilidad observado empíricamente.",
     "Parsimonioso: un GARCH(1,1) sustituye a un ARCH(q) de orden alto.",
     "Genera colas pesadas de forma endógena, sin supuestos extra.",
-    "Base de una familia amplia de extensiones (que abordan otros equipos).",
+    "Base de una familia amplia de extensiones.",
     "Estándar de la industria financiera y académica desde hace décadas.",
   ];
   const limitaciones = [
@@ -1028,7 +1059,7 @@ function SlideBalance() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="13">BALANCE</Eyebrow>
+      <Eyebrow n="17">BALANCE</Eyebrow>
       <h2 className="title">Ventajas y limitaciones</h2>
       <div className="slide-body layout-balance">
         <div className="balance-grid">
@@ -1046,12 +1077,374 @@ function SlideBalance() {
           <span>GARCH es potente para capturar persistencia y agrupamiento de volatilidad, pero requiere diagnóstico y extensiones cuando hay asimetrías o choques externos.</span>
         </div>
       </div>
-      <PageFoot page="13" />
+      <PageFoot page="17" />
     </div>
   );
 }
 
+function ExcelGarchLab({ onClose }) {
+  const [step, setStep] = useState(1); // 1: Datos, 2: Parámetros, 3: Volatilidad, 4: Simulación, 5: Diagnóstico
+  const [calOmega, setCalOmega] = useState(0.000012);
+  const [calAlpha, setCalAlpha] = useState(0.10);
+  const [calBeta, setCalBeta] = useState(0.85);
+  const [showTableInStep1, setShowTableInStep1] = useState(false);
+
+  const resetParams = () => {
+    setCalOmega(0.000012);
+    setCalAlpha(0.10);
+    setCalBeta(0.85);
+  };
+
+  const recalculatedVol = useMemo(() => {
+    const data = [];
+    let lastVar = EXCEL_FULL_DATA.reduce((acc, d) => acc + (d.rt / 100) * (d.rt / 100), 0) / EXCEL_FULL_DATA.length;
+    for (let i = 0; i < EXCEL_FULL_DATA.length; i++) {
+      const item = EXCEL_FULL_DATA[i];
+      const rt_raw = item.rt / 100;
+      const currentVar = calOmega + calAlpha * (rt_raw * rt_raw) + calBeta * lastVar;
+      const currentSig = Math.sqrt(currentVar) * 100;
+      data.push({
+        t: item.t,
+        fecha: item.fecha,
+        precio: item.precio,
+        rt: item.rt,
+        sigExcel: item.sig,
+        sigRecalced: Number(currentSig.toFixed(4)),
+        bandUpper: Number((1.96 * currentSig).toFixed(4)),
+        bandLower: Number((-1.96 * currentSig).toFixed(4)),
+        z: item.z,
+        ysim: item.ysim
+      });
+      lastVar = currentVar;
+    }
+    return data;
+  }, [calOmega, calAlpha, calBeta]);
+
+  const diagnostico = [
+    { crit: "Estacionariedad",       result: "Estacionario",            detail: "α₁ + β₁ = 0.95 < 1: la varianza incondicional de largo plazo existe y es finita." },
+    { crit: "Persistencia",           result: "Moderada-alta (0.95)",    detail: "La volatilidad presenta memoria temporal pero se disipa en un plazo razonable." },
+    { crit: "Componente dominante",   result: "β₁ > α₁ (0.85 > 0.10)",  detail: "La variabilidad condicional se explica mayormente por su propio rezago histórico." },
+    { crit: "Rango vs literatura",    result: "Dentro del rango típico", detail: "Coeficientes consistentes con estimaciones empíricas tradicionales de la literatura." },
+    { crit: "Volatilidad de LP",      result: "1.55% diaria",            detail: "Equivalente a 24.59% anualizada bajo el supuesto de 252 días." },
+  ];
+
+  return (
+    <section className="lab-overlay" aria-label="Caso de estudio bursátil">
+      <div className="lab-shell" style={{ display: "flex", flexDirection: "column", height: "100%", gap: "12px", padding: "16px 20px" }}>
+        
+        {/* Header */}
+        <div className="lab-head" style={{ marginBottom: "8px", paddingBottom: "8px" }}>
+          <div>
+            <div className="brand-kicker">HOJA DE CÁLCULO GARCH-EXCEL.xlsx</div>
+            <h2>Análisis Paso a Paso: Guía Interactiva de Estimación</h2>
+            <p>Sigue las pestañas del archivo Excel paso a paso, desde los retornos base hasta el diagnóstico final del modelo.</p>
+          </div>
+          <button className="icon-btn" onClick={onClose} aria-label="Cerrar caso de estudio"><X size={17} /></button>
+        </div>
+
+        {/* Stepper progress indicator */}
+        <div className="stepper-bar" style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--border)", paddingBottom: "10px", marginBottom: "4px" }}>
+          {[
+            { n: 1, label: "1. Datos Base" },
+            { n: 2, label: "2. Parámetros" },
+            { n: 3, label: "3. Volatilidad σₜ" },
+            { n: 4, label: "4. Simulación ŷₜ" },
+            { n: 5, label: "5. Diagnóstico" }
+          ].map((s) => (
+            <button
+              key={s.n}
+              onClick={() => setStep(s.n)}
+              className={"sub-tab-btn" + (step === s.n ? " active" : "")}
+              style={{ flex: 1, textBreak: "nowrap", margin: "0 4px", fontSize: "10px" }}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Two-Column Step Layout */}
+        <div className="step-content-grid" style={{ display: "grid", gridTemplateColumns: "35% 65%", gap: "16px", flex: 1, overflow: "hidden" }}>
+          
+          {/* Left Column: Theory & details */}
+          <div className="step-explanation-panel" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
+            
+            {step === 1 && (
+              <>
+                <span className="card-label">PASO 1 · PESTAÑA 'DATOS'</span>
+                <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Retornos y Datos Históricos</h3>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  El primer paso consiste en transformar el índice de precios bursátiles base ($P_t$) en retornos logarítmicos continuos ($r_t$), lo que estabiliza la varianza.
+                </p>
+                <div style={{ background: "var(--surface-3)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border)", fontFamily: "IBM Plex Mono", fontSize: "10.5px", margin: "4px 0", textAlign: "center" }}>
+                  {"r_t = ln(P_t / P_t-1)"}
+                </div>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  Contiene $n = 100$ observaciones diarias desde febrero a julio del 2026. Los retornos muestran fluctuaciones variables a lo largo del tiempo, con períodos alternos de calma y turbulencia.
+                </p>
+                <button
+                  className="sub-tab-btn"
+                  onClick={() => setShowTableInStep1(!showTableInStep1)}
+                  style={{ fontSize: "10px", alignSelf: "flex-start", marginTop: "8px" }}
+                >
+                  {showTableInStep1 ? "Ver Gráfico de Precios" : "Ver Tabla de Datos Base"}
+                </button>
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                <span className="card-label">PASO 2 · PESTAÑA 'GARCH' (CALIBRACIÓN)</span>
+                <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Estimación de Coeficientes</h3>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  En Excel estimamos los coeficientes óptimos mediante Máxima Verosimilitud. Estos determinan la dinámica de volatilidad esperada:
+                </p>
+                <div style={{ fontSize: "11px", display: "flex", flexDirection: "column", gap: "6px", margin: "6px 0" }}>
+                  <div style={{ display: "flex", gap: "8px", borderLeft: "2px solid var(--blue)", paddingLeft: "6px" }}>
+                    <span><strong>ω (base):</strong> Mínimo nivel de riesgo de largo plazo (1.20 × 10⁻⁵).</span>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", borderLeft: "2px solid var(--amber)", paddingLeft: "6px" }}>
+                    <span><strong>α₁ (ARCH):</strong> Reacción inmediata a choques recientes (0.10).</span>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", borderLeft: "2px solid var(--green)", paddingLeft: "6px" }}>
+                    <span><strong>β₁ (GARCH):</strong> Memoria o persistencia histórica del riesgo (0.85).</span>
+                  </div>
+                </div>
+                
+                <h4 style={{ fontSize: "11.5px", margin: "6px 0 2px", color: "var(--ink)" }}>Calibrador en Vivo GARCH(1,1)</h4>
+                
+                <label style={{ display: "flex", flexDirection: "column", fontSize: "10px", color: "var(--ink-faint)" }}>
+                  <span>ω (×10⁻⁶): {(calOmega * 1000000).toFixed(2)}</span>
+                  <input type="range" min="0" max="0.0001" step="0.000001" value={calOmega} onChange={(e) => setCalOmega(Number(e.target.value))} />
+                </label>
+
+                <label style={{ display: "flex", flexDirection: "column", fontSize: "10px", color: "var(--ink-faint)" }}>
+                  <span>α₁ (ARCH): {calAlpha.toFixed(2)}</span>
+                  <input type="range" min="0" max="0.40" step="0.01" value={calAlpha} onChange={(e) => setCalAlpha(Number(e.target.value))} />
+                </label>
+
+                <label style={{ display: "flex", flexDirection: "column", fontSize: "10px", color: "var(--ink-faint)" }}>
+                  <span>β₁ (GARCH): {calBeta.toFixed(2)}</span>
+                  <input type="range" min="0.50" max="0.95" step="0.01" value={calBeta} onChange={(e) => setCalBeta(Number(e.target.value))} />
+                </label>
+
+                <button className="run-btn" onClick={resetParams} style={{ fontSize: "10px", padding: "6px", marginTop: "4px" }}>
+                  Restaurar Parámetros Excel
+                </button>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <span className="card-label">PASO 3 · PESTAÑA 'GRAFICAS' (VOLATILIDAD)</span>
+                <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Volatilidad Condicional σₜ</h3>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  Con la ecuación recursiva GARCH calculamos la varianza condicional para cada instante $t$:
+                </p>
+                <div style={{ background: "var(--surface-3)", padding: "8px", borderRadius: "8px", border: "1px solid var(--border)", fontFamily: "IBM Plex Mono", fontSize: "10px", margin: "4px 0", textAlign: "center" }}>
+                  {"σ²_t = ω + α₁·ε²_t-1 + β₁·σ²_t-1"}
+                </div>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  La gráfica a la derecha muestra los retornos reales envueltos por bandas dinámicas de volatilidad a un 95% de confianza ($\pm 1.96 \sigma_t$). 
+                </p>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  Se aprecia claramente el <strong>Volatility Clustering</strong>: en $t = 30$ y $t = 77$, fuertes shocks ensanchan la banda temporalmente, mientras que en otros períodos el riesgo decae lentamente.
+                </p>
+              </>
+            )}
+
+            {step === 4 && (
+              <>
+                <span className="card-label">PASO 4 · PESTAÑA 'GARCH' (SIMULACIÓN)</span>
+                <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Retornos Simulados ŷₜ</h3>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  Una de las capacidades clave del GARCH es generar trayectorias artificiales del activo mediante la volatilidad condicional y shocks aleatorios independientes $z_t \sim N(0,1)$:
+                </p>
+                <div style={{ background: "var(--surface-3)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border)", fontFamily: "IBM Plex Mono", fontSize: "10.5px", margin: "4px 0", textAlign: "center" }}>
+                  {"ŷ_t = σ_t · z_t"}
+                </div>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  <strong>Ajuste dinámico (Cita del Excel):</strong> <em>"La línea azul muestra los retornos reales y la roja los simulados por GARCH. Ambos tienen una magnitud similar... no se busca predecir el movimiento exacto, sino la escala de volatilidad."</em>
+                </p>
+              </>
+            )}
+
+            {step === 5 && (
+              <>
+                <span className="card-label">PASO 5 · PESTAÑA 'INTERPRETACIÓN'</span>
+                <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Diagnóstico y Conclusión</h3>
+                <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
+                  <strong>Cita textual del Excel:</strong> <em>"Existe volatilidad y heterocedasticidad condicional, ya que el riesgo cambia a través del tiempo... los shocks afectan la volatilidad y sus efectos permanecen durante varios periodos (α₁+β₁=0.95)."</em>
+                </p>
+                <div style={{ background: "var(--surface-3)", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)", fontSize: "10.5px", color: "var(--ink-dim)", marginTop: "4px" }}>
+                  La volatilidad incondicional esperada en el largo plazo es de <strong>1.55% diaria</strong> y <strong>24.59% anual</strong>.
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Right Column: Visualization & charts - sized appropriately */}
+          <div className="step-visualization-panel" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden", position: "relative" }}>
+            
+            {step === 1 && !showTableInStep1 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span className="excel-chart-title" style={{ fontSize: "11px" }}>Serie Histórica: Precios de Cierre del Índice ($P_t$)</span>
+                <div style={{ flex: 1, minHeight: "220px" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={recalculatedVol} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--amber)" stopOpacity={0.25} />
+                          <stop offset="100%" stopColor="var(--amber)" stopOpacity={0.01} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="t" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 9 }} tickFormatter={(v) => `t${v}`} ticks={[1, 20, 40, 60, 80, 100]} />
+                      <YAxis hide domain={["dataMin - 100", "dataMax + 100"]} />
+                      <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 8, fontSize: 10, color: "var(--ink)" }} />
+                      <Area type="monotone" dataKey="precio" stroke="var(--amber)" strokeWidth={1.8} fill="url(#priceGrad)" isAnimationActive={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {step === 1 && showTableInStep1 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <span className="excel-chart-title" style={{ fontSize: "11px", marginBottom: "6px" }}>Muestra de Datos Base (Feb - Jun 2026)</span>
+                <div style={{ flex: 1, overflowY: "auto", border: "1px solid var(--border)", borderRadius: "8px" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", textAlign: "left" }}>
+                    <thead style={{ background: "var(--surface-3)", position: "sticky", top: 0, borderBottom: "1px solid var(--border)", zIndex: 1 }}>
+                      <tr>
+                        <th style={{ padding: "6px 8px" }}>t</th>
+                        <th style={{ padding: "6px 8px" }}>Fecha</th>
+                        <th style={{ padding: "6px 8px" }}>Precio Pt</th>
+                        <th style={{ padding: "6px 8px" }}>Retorno rt %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recalculatedVol.slice(0, 12).map((row) => (
+                        <tr key={row.t} style={{ borderBottom: "1px solid var(--border)", background: row.t % 2 === 0 ? "transparent" : "var(--surface-3)" }}>
+                          <td style={{ padding: "5px 8px", fontFamily: "IBM Plex Mono" }}>{row.t}</td>
+                          <td style={{ padding: "5px 8px" }}>{row.fecha}</td>
+                          <td style={{ padding: "5px 8px", fontFamily: "IBM Plex Mono" }}>{row.precio.toFixed(2)}</td>
+                          <td style={{ padding: "5px 8px", fontFamily: "IBM Plex Mono", color: row.rt >= 0 ? "var(--green)" : "var(--red)" }}>
+                            {row.rt >= 0 ? "+" : ""}{row.rt.toFixed(4)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span className="excel-chart-title" style={{ fontSize: "11px" }}>Calibración en Vivo: Volatilidad original (Azul) vs Calibrada (Ámbar)</span>
+                <div style={{ flex: 1, minHeight: "220px" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={recalculatedVol} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="t" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 9 }} ticks={[1, 20, 40, 60, 80, 100]} />
+                      <YAxis hide domain={[0.7, 1.8]} />
+                      <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 8, fontSize: 10 }} />
+                      <Line type="monotone" dataKey="sigExcel" stroke="var(--blue)" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="sigRecalced" stroke="var(--amber)" strokeWidth={2} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span className="excel-chart-title" style={{ fontSize: "11px" }}>Banda de Confianza σₜ al 95% (Azul) vs Retornos Bursátiles (Ámbar)</span>
+                <div style={{ flex: 1, minHeight: "220px" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={recalculatedVol} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="bandGradStep" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--blue)" stopOpacity={0.05} />
+                          <stop offset="100%" stopColor="var(--blue)" stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="t" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 9 }} ticks={[1, 20, 40, 60, 80, 100]} />
+                      <YAxis hide domain={[-5.5, 5.5]} />
+                      <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 8, fontSize: 10 }} />
+                      <ReferenceLine y={0} stroke="var(--border)" strokeWidth={1} />
+                      <Area type="monotone" dataKey="bandUpper" stroke="transparent" fill="url(#bandGradStep)" dot={false} isAnimationActive={false} />
+                      <Area type="monotone" dataKey="bandLower" stroke="transparent" fill="url(#bandGradStep)" dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="bandUpper" stroke="var(--blue)" strokeDasharray="3 3" strokeWidth={1.2} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="bandLower" stroke="var(--blue)" strokeDasharray="3 3" strokeWidth={1.2} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="rt" stroke="var(--amber)" strokeWidth={1.5} dot={{ r: 1 }} isAnimationActive={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span className="excel-chart-title" style={{ fontSize: "11px" }}>Simulación Generativa: Retornos Reales (Azul) vs Simulados GARCH (Ámbar)</span>
+                <div style={{ flex: 1, minHeight: "220px" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={recalculatedVol} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="t" stroke="var(--border-strong)" tick={{ fill: "var(--ink-dim)", fontSize: 9 }} ticks={[1, 20, 40, 60, 80, 100]} />
+                      <YAxis hide domain={[-4.5, 4.5]} />
+                      <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", borderRadius: 8, fontSize: 10 }} />
+                      <ReferenceLine y={0} stroke="var(--border)" strokeWidth={1} />
+                      <Line type="monotone" dataKey="rt" stroke="var(--blue)" strokeWidth={1.2} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="ysim" stroke="var(--amber)" strokeWidth={1.2} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {step === 5 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                <span className="excel-chart-title" style={{ fontSize: "11px", marginBottom: "6px" }}>Resumen Diagnóstico (Espec. de Largo Plazo)</span>
+                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px" }}>
+                  {diagnostico.map((d, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "110px 100px 1fr", gap: "8px", background: "var(--surface-3)", border: "1px solid var(--border)", borderRadius: "8px", padding: "6px 10px", fontSize: "10.5px" }}>
+                      <strong style={{ color: "var(--ink)" }}>{d.crit}</strong>
+                      <span style={{ color: "var(--amber)", fontFamily: "IBM Plex Mono" }}>{d.result}</span>
+                      <span style={{ color: "var(--ink-dim)" }}>{d.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer step controller */}
+        <div className="stepper-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: "8px", marginTop: "4px" }}>
+          <button
+            className="nav-btn"
+            onClick={() => setStep(Math.max(1, step - 1))}
+            disabled={step === 1}
+            style={{ padding: "6px 12px", height: "30px", fontSize: "11px" }}
+          >
+            <ArrowLeft size={14} style={{ marginRight: "4px" }} /> Anterior
+          </button>
+          <span style={{ fontSize: "11px", fontFamily: "IBM Plex Mono", color: "var(--ink-dim)" }}>
+            Paso {step} de 5
+          </span>
+          <button
+            className="nav-btn"
+            onClick={() => setStep(Math.min(5, step + 1))}
+            disabled={step === 5}
+            style={{ padding: "6px 12px", height: "30px", fontSize: "11px" }}
+          >
+            Siguiente <ArrowRight size={14} style={{ marginLeft: "4px" }} />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const SLIDES = [
+  SlideQueEs, SlideHistoria, SlideVolatilidad, SlideNombre,
   SlideMotivacion, SlideRegularidades, SlideARCH, SlideGARCH,
   SlideGARCH11, SlideTeoria, SlideFormulas, SlideHipotesis, SlideInterpretacion, SlideDistribuciones,
   SlideMetodologia, SlideAplicaciones, SlideBalance,
@@ -1066,8 +1459,7 @@ export default function App() {
   const [current, setCurrent] = useState(0);
   const [theme, setTheme] = useState("dark");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [practicalOpen, setPracticalOpen] = useState(false);
-  const [liveLabOpen, setLiveLabOpen] = useState(false);
+  const [view, setView] = useState("slides"); // "slides" | "petroleo" | "excel" | "simulador"
 
   const goTo = useCallback((n) => setCurrent(Math.max(0, Math.min(TOTAL - 1, n))), []);
   const next = useCallback(() => goTo(current + 1), [current, goTo]);
@@ -1075,6 +1467,7 @@ export default function App() {
 
   useEffect(() => {
     function onKey(e) {
+      if (view !== "slides") return;
       if (e.key === "ArrowRight" || e.key === "PageDown") next();
       else if (e.key === "ArrowLeft" || e.key === "PageUp") prev();
       else if (e.key === "Home") goTo(0);
@@ -1083,11 +1476,12 @@ export default function App() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [next, prev, goTo]);
+  }, [next, prev, goTo, view]);
 
   const touchX = useRef(null);
   const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
   const onTouchEnd = (e) => {
+    if (view !== "slides") return;
     if (touchX.current == null) return;
     const dx = e.changedTouches[0].clientX - touchX.current;
     if (dx < -40) next();
@@ -1119,23 +1513,43 @@ export default function App() {
         </div>
 
         <div className="topbar-center">
-          <span className="crumb-group">{currentMeta.group}</span>
-          <span className="crumb-sep">/</span>
-          <span className="crumb-title">{currentMeta.title}</span>
+          {view === "slides" ? (
+            <>
+              <span className="crumb-group">{currentMeta.group}</span>
+              <span className="crumb-sep">/</span>
+              <span className="crumb-title">{currentMeta.title}</span>
+            </>
+          ) : (
+            <>
+              <span className="crumb-group">Pestañas del espacio de trabajo</span>
+              <span className="crumb-sep">/</span>
+              <span className="crumb-title">
+                {view === "petroleo" ? "Caso Petróleo (Ecuador)" : view === "excel" ? "Caso de estudio Excel" : "Simulador dinámico"}
+              </span>
+            </>
+          )}
         </div>
 
         <div className="topbar-right">
           <button
-            className={"practical-btn" + (practicalOpen ? " active" : "")}
-            onClick={() => { setPracticalOpen(true); setLiveLabOpen(false); }}
-            aria-label="Ir al caso practico"
+            className={"practical-btn" + (view === "petroleo" ? " active" : "")}
+            onClick={() => setView(view === "petroleo" ? "slides" : "petroleo")}
+            aria-label="Ir al caso practico de petroleo"
           >
             <Database size={15} />
-            <span>Caso práctico</span>
+            <span>Caso Petróleo</span>
           </button>
           <button
-            className={"practical-btn lab-btn" + (liveLabOpen ? " active" : "")}
-            onClick={() => { setLiveLabOpen(true); setPracticalOpen(false); }}
+            className={"practical-btn" + (view === "excel" ? " active" : "")}
+            onClick={() => setView(view === "excel" ? "slides" : "excel")}
+            aria-label="Ir al caso de estudio Excel"
+          >
+            <Database size={15} />
+            <span>Caso Excel</span>
+          </button>
+          <button
+            className={"practical-btn lab-btn" + (view === "simulador" ? " active" : "")}
+            onClick={() => setView(view === "simulador" ? "slides" : "simulador")}
             aria-label="Abrir simulador en vivo"
           >
             <Calculator size={15} />
@@ -1154,7 +1568,7 @@ export default function App() {
           </button>
         </div>
       </header>
-
+ 
       <div className="app-body">
         {/* ---------------- Sidebar ---------------- */}
         <aside className={"sidebar" + (sidebarOpen ? " open" : "")}>
@@ -1165,8 +1579,8 @@ export default function App() {
                 {g.items.map((it) => (
                   <button
                     key={it.idx}
-                    className={"outline-item" + (it.idx === current ? " active" : "")}
-                    onClick={() => { goTo(it.idx); setSidebarOpen(false); }}
+                    className={"outline-item" + (view === "slides" && it.idx === current ? " active" : "")}
+                    onClick={() => { setView("slides"); goTo(it.idx); setSidebarOpen(false); }}
                   >
                     <span className="outline-tag">{it.tag}</span>
                     <span className="outline-title">{it.title}</span>
@@ -1181,33 +1595,41 @@ export default function App() {
           </div>
         </aside>
         {sidebarOpen && <div className="scrim" onClick={() => setSidebarOpen(false)} />}
-
+ 
         {/* ---------------- Main ---------------- */}
-        <main className="main">
-          <div className="stage-outer">
-            <div className="stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-              <CurrentSlide key={current} />
-            </div>
-          </div>
-
-          <div className="controls">
-            <button className="nav-btn" onClick={prev} disabled={current === 0} aria-label="Anterior">
-              <ArrowLeft size={16} />
-            </button>
-            <div className="dots">
-              {SLIDES.map((_, i) => (
-                <button key={i} className={"dot" + (i === current ? " active" : "")} onClick={() => goTo(i)} aria-label={`Ir a la diapositiva ${i + 1}`} />
-              ))}
-            </div>
-            <div className="counter">{String(current + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}</div>
-            <button className="nav-btn" onClick={next} disabled={current === TOTAL - 1} aria-label="Siguiente">
-              <ArrowRight size={16} />
-            </button>
-          </div>
+        <main className="main" style={{ position: "relative", display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+          {view === "slides" ? (
+            <>
+              <div className="stage-outer">
+                <div className="stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+                  <CurrentSlide key={current} />
+                </div>
+              </div>
+ 
+              <div className="controls">
+                <button className="nav-btn" onClick={prev} disabled={current === 0} aria-label="Anterior">
+                  <ArrowLeft size={16} />
+                </button>
+                <div className="dots">
+                  {SLIDES.map((_, i) => (
+                    <button key={i} className={"dot" + (i === current ? " active" : "")} onClick={() => goTo(i)} aria-label={`Ir a la diapositiva ${i + 1}`} />
+                  ))}
+                </div>
+                <div className="counter">{String(current + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}</div>
+                <button className="nav-btn" onClick={next} disabled={current === TOTAL - 1} aria-label="Siguiente">
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </>
+          ) : view === "petroleo" ? (
+            <PracticalLab onClose={() => setView("slides")} />
+          ) : view === "excel" ? (
+            <ExcelGarchLab onClose={() => setView("slides")} />
+          ) : (
+            <LiveGarchLab onClose={() => setView("slides")} />
+          )}
         </main>
       </div>
-      {practicalOpen && <PracticalLab onClose={() => setPracticalOpen(false)} />}
-      {liveLabOpen && <LiveGarchLab onClose={() => setLiveLabOpen(false)} />}
     </div>
   );
 }
@@ -1416,6 +1838,113 @@ const CSS = `
 .practical-btn.active {
   border-color: var(--green);
   color: var(--green);
+}
+.sub-tabs-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.sub-tab-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sub-tab-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+.sub-tab-btn.active {
+  background: var(--surface-3);
+  border-color: var(--amber);
+  color: var(--amber);
+  font-weight: 500;
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  margin: 8px 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--amber);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.stepper-bar {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+.step-content-grid {
+  display: grid;
+  grid-template-columns: 35% 65%;
+  gap: 16px;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100% - 100px);
+}
+.step-explanation-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.step-explanation-panel p {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+}
+.step-visualization-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.stepper-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.excel-chart-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-dim);
+  font-weight: 500;
+  margin-bottom: 6px;
 }
 .team-strip {
   display: flex;
@@ -2029,6 +2558,641 @@ const CSS = `
 }
 .dist-row p { margin: 0; font-size: 11px; color: var(--ink-dim); line-height: 1.45; }
 
+/* ---- Clean & Professional Layout Styles (No Emojis) ---- */
+
+/* -- Acronym Table & Timeline nodes -- */
+.layout-historia-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.timeline-horizontal {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  position: relative;
+  margin: 10px 0;
+}
+.timeline-node {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.node-year {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--amber);
+}
+.node-line-marker {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 10px;
+}
+.node-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  z-index: 2;
+}
+.node-connector {
+  position: absolute;
+  left: 8px;
+  right: -12px;
+  height: 1px;
+  background: var(--border);
+  z-index: 1;
+}
+.node-content strong {
+  font-family: 'Fraunces', serif;
+  font-size: 12px;
+  color: var(--ink);
+}
+.node-content p {
+  margin: 4px 0 0 0;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+
+/* -- Volatilidad Clean Layout -- */
+.layout-volatilidad-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.vol-definition {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.vol-ex-grid-clean {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.vol-item-clean {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vol-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.vol-item-top strong {
+  font-size: 12px;
+  color: var(--ink);
+}
+.vol-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--ink-dim);
+}
+.vol-badge.level-bajo { color: var(--green); background: color-mix(in srgb, var(--green) 12%, transparent); }
+.vol-badge.level-medio { color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, transparent); }
+.vol-badge.level-alto { color: var(--amber); background: color-mix(in srgb, var(--amber) 12%, transparent); }
+.vol-badge.level-muy-alto { color: var(--red); background: color-mix(in srgb, var(--red) 12%, transparent); }
+.vol-item-clean p {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+
+/* -- Acronym Table Clean -- */
+.layout-nombre-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.acronym-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.acronym-row {
+  display: grid;
+  grid-template-columns: 60px 160px 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+}
+.acronym-row:last-child {
+  border-bottom: none;
+}
+.acronym-letter {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--amber);
+}
+.acronym-term {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.acronym-def {
+  font-size: 11px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+.het-section-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.problems-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.problem-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.problem-card strong {
+  font-size: 11.5px;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 4px;
+}
+.problem-card p {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+
+/* -- Theory & Properties Clean -- */
+.layout-theory-clean {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+}
+.theory-hero-clean {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.theory-formula {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--amber);
+  margin: 6px 0;
+}
+.theory-mini-eq {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-faint);
+  background: var(--surface-3);
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.theory-table-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.theory-row-clean {
+  display: flex;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.theory-row-clean .row-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--amber);
+}
+.theory-row-clean strong {
+  font-size: 12px;
+  color: var(--ink);
+}
+.theory-row-clean p {
+  margin: 2px 0 0 0;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+.persistence-strip-clean {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink-faint);
+  background: var(--surface-2);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.persistence-bar-clean {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  margin: 0 16px;
+  position: relative;
+}
+.persistence-bar-clean i {
+  position: absolute;
+  left: 0;
+  width: 95%;
+  height: 100%;
+  background: var(--blue);
+}
+
+/* -- Formulas Clean -- */
+.formulas-stack-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.formula-item {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.formula-type {
+  font-family: 'Fraunces', serif;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: var(--surface-3);
+  border-right: 1px solid var(--border);
+}
+.formula-type.media { color: var(--blue); }
+.formula-type.error { color: var(--amber); }
+.formula-type.varianza { color: var(--green); }
+.formula-math {
+  padding: 10px 14px;
+}
+.formula-math p {
+  margin: 4px 0 0 0;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+.params-table-clean {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.param-row-clean {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.param-symbol {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--amber);
+}
+.param-info strong {
+  font-size: 11px;
+  color: var(--ink);
+  display: block;
+}
+.param-info p {
+  margin: 2px 0 0 0;
+  font-size: 9.5px;
+  color: var(--ink-faint);
+  line-height: 1.3;
+}
+
+/* -- Hipotesis & supuestos Clean -- */
+.layout-hipotesis-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.hypothesis-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.hyp-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.hyp-card.h0 { border-left: 3px solid var(--blue); }
+.hyp-card.h1 { border-left: 3px solid var(--amber); }
+.hyp-card.decision { border-left: 3px solid var(--green); }
+.card-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+.hyp-card strong {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 6px;
+}
+.hyp-card p {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+.supuestos-header {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+}
+.supuestos-grid-clean {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.supuesto-item-clean {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.supuesto-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 2px;
+}
+.supuesto-main strong {
+  font-size: 11px;
+  color: var(--ink);
+  display: block;
+}
+.supuesto-main p {
+  margin: 2px 0 0 0;
+  font-size: 9.5px;
+  color: var(--ink-dim);
+  line-height: 1.3;
+}
+
+/* -- Interpretation Clean -- */
+.layout-interp-clean {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.interp-grid-clean {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.interp-card-clean {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.interp-card-clean.color-amber { border-top: 3px solid var(--amber); }
+.interp-card-clean.color-blue  { border-top: 3px solid var(--blue); }
+.interp-card-clean.color-red   { border-top: 3px solid var(--red); }
+.interp-card-clean.color-green { border-top: 3px solid var(--green); }
+.interp-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 4px;
+}
+.interp-card-clean strong {
+  font-size: 11.5px;
+  color: var(--ink);
+  display: block;
+}
+.interp-card-clean p {
+  margin: 4px 0 6px 0;
+  font-size: 10px;
+  color: var(--ink-dim);
+  line-height: 1.35;
+}
+.interp-example {
+  font-size: 9px;
+  color: var(--ink-faint);
+  display: block;
+}
+.interp-table-summary {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.table-row-clean {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  font-size: 11px;
+}
+.table-row-clean:last-child {
+  border-bottom: none;
+}
+.param-comb {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  color: var(--amber);
+}
+
+/* -- Distributions Clean -- */
+.layout-dists-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dists-table {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.dists-table-header {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr 1fr;
+  padding: 10px 14px;
+  background: var(--surface-3);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border-bottom: 1px solid var(--border);
+}
+.dists-table-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr 1fr;
+  padding: 10px 14px;
+  font-size: 10.5px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+.dists-table-row:last-child {
+  border-bottom: none;
+}
+.dist-col-name {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--ink);
+}
+
+/* ---- Excel GARCH Slide/Lab ---- */
+.layout-excel-garch { gap: 12px; }
+
+.excel-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+.excel-kpis {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.excel-kpi-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.excel-kpi-card.tone-amber { border-color: color-mix(in srgb, var(--amber) 35%, transparent); }
+.excel-kpi-card.tone-blue  { border-color: color-mix(in srgb, var(--blue) 35%, transparent); }
+.excel-kpi-card > span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+.excel-kpi-card > strong {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(13px, 1.4vw, 18px);
+  color: var(--ink);
+  line-height: 1;
+}
+.excel-kpi-card.tone-amber > strong { color: var(--amber); }
+.excel-kpi-card.tone-blue  > strong { color: var(--blue); }
+.excel-kpi-card > p { margin: 0; font-size: 9px; color: var(--ink-faint); line-height: 1.3; }
+
+.excel-chart-wrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 12px 6px;
+  height: clamp(140px, 22vh, 195px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.excel-chart-header { display: flex; justify-content: space-between; align-items: baseline; }
+.excel-chart-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  letter-spacing: 0.05em;
+}
+.excel-chart-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-faint);
+}
+
+.excel-diag { display: flex; flex-direction: column; gap: 6px; }
+.excel-diag-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+.excel-diag-grid { display: flex; flex-direction: column; gap: 4px; }
+.excel-diag-row {
+  display: grid;
+  grid-template-columns: 175px 195px 1fr;
+  gap: 10px;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+}
+.excel-diag-crit {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+}
+.excel-diag-result {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--blue);
+}
+.excel-diag-detail { font-size: 11px; color: var(--ink-dim); line-height: 1.4; }
+.excel-conclusion { margin-top: 2px; }
+
+
 
 
 /* ---- equations ---- */
@@ -2223,6 +3387,17 @@ const CSS = `
   padding: 18px;
   background: rgba(0,0,0,.58);
 }
+.main .lab-overlay {
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  display: block;
+  padding: 0;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
 .lab-shell {
   width: min(1180px, 100%);
   max-height: min(900px, calc(100vh - 36px));
@@ -2232,8 +3407,20 @@ const CSS = `
     var(--surface);
   border: 1px solid var(--border-strong);
   border-radius: 22px;
-  box-shadow: 0 24px 56px -34px rgba(0,0,0,.78);
+  box-shadow: 0 24px 56px -34 rgba(0,0,0,.78);
   padding: clamp(18px, 2.4vw, 28px);
+}
+.main .lab-shell {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 12px 16px;
+  overflow: visible;
 }
 .lab-head {
   display: flex;
