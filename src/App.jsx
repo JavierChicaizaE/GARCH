@@ -63,22 +63,34 @@ const FORECAST_2027 = [
 /* ------------------------------------------------------------------ */
 
 const OUTLINE = [
+  { group: "Introducción", items: [
+    { idx: 0,  tag: "01", title: "¿Qué es el modelo GARCH?" },
+    { idx: 1,  tag: "02", title: "Historia del modelo" },
+    { idx: 2,  tag: "03", title: "¿Qué es la volatilidad?" },
+    { idx: 3,  tag: "04", title: "¿Por qué se llama GARCH?" },
+  ]},
   { group: "Fundamentos", items: [
-    { idx: 0, tag: "01", title: "Motivación" },
-    { idx: 1, tag: "02", title: "Regularidades empíricas" },
+    { idx: 4,  tag: "05", title: "Motivación" },
+    { idx: 5,  tag: "06", title: "Regularidades empíricas" },
   ]},
   { group: "El modelo", items: [
-    { idx: 2, tag: "03", title: "Modelo ARCH" },
-    { idx: 3, tag: "04", title: "Modelo GARCH" },
-    { idx: 4, tag: "05", title: "GARCH(1,1)" },
+    { idx: 6,  tag: "07", title: "Modelo ARCH" },
+    { idx: 7,  tag: "08", title: "Modelo GARCH" },
+    { idx: 8,  tag: "09", title: "GARCH(1,1)" },
+  ]},
+  { group: "Teoría", items: [
+    { idx: 9,  tag: "10", title: "Propiedades estadísticas" },
+    { idx: 10, tag: "11", title: "Fórmulas y parámetros" },
+    { idx: 11, tag: "12", title: "Hipótesis y supuestos" },
+    { idx: 12, tag: "13", title: "Interpretación" },
+    { idx: 13, tag: "14", title: "Distribuciones" },
   ]},
   { group: "Análisis", items: [
-    { idx: 5, tag: "06", title: "Propiedades teóricas" },
-    { idx: 6, tag: "07", title: "Estimación y diagnóstico" },
+    { idx: 14, tag: "15", title: "Estimación y diagnóstico" },
   ]},
   { group: "Aplicación", items: [
-    { idx: 7, tag: "08", title: "Aplicaciones" },
-    { idx: 8, tag: "09", title: "Ventajas y límites" },
+    { idx: 15, tag: "16", title: "Aplicaciones" },
+    { idx: 16, tag: "17", title: "Ventajas y límites" },
   ]},
 ];
 
@@ -134,7 +146,180 @@ function PageFoot({ page }) {
 /*  Slide content                                                     */
 /* ------------------------------------------------------------------ */
 
+function SlideQueEs() {
+  return (
+    <div className="slide">
+      <Eyebrow n="01">INTRODUCCIÓN</Eyebrow>
+      <h2 className="title">¿Qué es el modelo GARCH?</h2>
+      <div className="slide-body layout-que-es">
+        <div className="que-es-hero">
+          <div className="acronym-full">
+            <span className="acronym-word">Generalized</span>
+            <span className="acronym-sep"> · </span>
+            <span className="acronym-word">Autoregressive</span>
+            <span className="acronym-sep"> · </span>
+            <span className="acronym-word">Conditional</span>
+            <span className="acronym-sep"> · </span>
+            <span className="acronym-word">Heteroskedasticity</span>
+          </div>
+          <p className="que-es-def">El modelo GARCH es un modelo econométrico utilizado para <strong>analizar y pronosticar la volatilidad de una serie temporal</strong>. Su principal característica es que permite que la varianza cambie a lo largo del tiempo, algo que ocurre con frecuencia en variables financieras y económicas.</p>
+          <div className="que-es-contrast">
+            <div className="contrast-block contrast-no">
+              <div className="contrast-lbl">Regresión clásica</div>
+              <p>Supone que la varianza del error <strong>permanece constante</strong> en el tiempo (homocedasticidad).</p>
+            </div>
+            <div className="contrast-arrow">→</div>
+            <div className="contrast-block contrast-si">
+              <div className="contrast-lbl">Modelo GARCH</div>
+              <p>Reconoce que existen períodos de estabilidad y otros de alta incertidumbre. Permite <strong>estimar el riesgo futuro</strong> de manera más realista.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card-grid cols-3 compact">
+          <Card n="01" title="¿Para qué sirve?" tone="blue">Modelar y pronosticar la volatilidad de series financieras, económicas o de cualquier variable con varianza cambiante en el tiempo.</Card>
+          <Card n="02" title="¿Qué captura?">La heterocedasticidad condicional: la varianza del error no es fija sino que evoluciona siguiendo sus propios valores pasados.</Card>
+          <Card n="03" title="¿Por qué es útil?" tone="amber">Permite estimar el riesgo de forma dinámica, lo que es esencial para valoración de activos, gestión de carteras y análisis de riesgo.</Card>
+        </div>
+      </div>
+      <PageFoot page="01" />
+    </div>
+  );
+}
+
+function SlideHistoria() {
+  const hitos = [
+    { year: "1963", color: "faint", title: "Mandelbrot", body: "Documenta que los retornos financieros presentan colas pesadas y agrupamiento de varianza: la variabilidad no es constante." },
+    { year: "1982", color: "blue", title: "ARCH — Robert Engle", body: "Propone el modelo ARCH (Autoregressive Conditional Heteroskedasticity): primera formalización de la varianza condicional dinámica." },
+    { year: "1986", color: "amber", title: "GARCH — Tim Bollerslev", body: "Generaliza el ARCH incorporando rezagos de la propia varianza condicional. El GARCH(1,1) se convierte en estándar de la industria." },
+    { year: "2003", color: "green", title: "Premio Nobel — Robert Engle", body: "La Real Academia Sueca de Ciencias reconoce a Engle con el Nobel de Economía por el desarrollo del modelo ARCH/GARCH." },
+    { year: "Hoy", color: "amber", title: "Estándar global", body: "GARCH y sus extensiones (EGARCH, GJR-GARCH, DCC-GARCH) se usan en banca, gestión de fondos, bancos centrales y academia." },
+  ];
+  return (
+    <div className="slide">
+      <Eyebrow n="02">INTRODUCCIÓN</Eyebrow>
+      <h2 className="title">Historia del modelo GARCH</h2>
+      <div className="slide-body layout-historia">
+        <p className="lede">Durante muchos años los economistas asumían que la variabilidad de una serie permanecía constante. Al analizar mercados financieros se observó que existían períodos de calma y otros de turbulencia extrema.</p>
+        <div className="timeline">
+          {hitos.map((h, i) => (
+            <div className={`timeline-item tl-${h.color}`} key={i}>
+              <div className="tl-year">{h.year}</div>
+              <div className="tl-dot" />
+              <div className="tl-content">
+                <strong>{h.title}</strong>
+                <p>{h.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="pull-quote">Actualmente GARCH es uno de los modelos más utilizados para analizar riesgo financiero a nivel mundial.</p>
+      </div>
+      <PageFoot page="02" />
+    </div>
+  );
+}
+
+function SlideVolatilidad() {
+  const ejemplos = [
+    ["📦", "Precio del petróleo", "Alta volatilidad — sensible a geopolítica y oferta global."],
+    ["💵", "Precio del dólar", "Volatilidad media — afectada por tasas de interés y política monetaria."],
+    ["📈", "Acciones", "Variable — empresas tecnológicas mucho más volátiles que empresas de servicios."],
+    ["₿", "Bitcoin", "Muy alta volatilidad — movimientos de ±10% en un solo día son frecuentes."],
+    ["🏦", "Tasas de interés", "Generalmente baja — pero aumenta en períodos de crisis o ajuste monetario."],
+    ["🌽", "Materias primas", "Alta volatilidad — dependiente de clima, cosechas y demanda mundial."],
+  ];
+  return (
+    <div className="slide">
+      <Eyebrow n="03">INTRODUCCIÓN</Eyebrow>
+      <h2 className="title">¿Qué es la volatilidad?</h2>
+      <div className="slide-body layout-volatilidad">
+        <div className="vol-definition">
+          <div className="vol-def-text">
+            <p>La <strong>volatilidad</strong> representa el grado de variación de una variable respecto al tiempo.</p>
+            <div className="vol-levels">
+              <div className="vol-level vol-low">
+                <div className="vol-level-bar" />
+                <div>
+                  <strong>Baja volatilidad</strong>
+                  <p>La variable cambia muy poco entre un período y otro. Comportamiento estable y predecible.</p>
+                </div>
+              </div>
+              <div className="vol-level vol-high">
+                <div className="vol-level-bar" />
+                <div>
+                  <strong>Alta volatilidad</strong>
+                  <p>La variable presenta cambios bruscos y frecuentes. Comportamiento incierto y difícil de predecir.</p>
+                </div>
+              </div>
+            </div>
+            <div className="vol-conclusion">
+              <span>La volatilidad es importante porque permite <strong>medir el riesgo</strong> de una inversión o activo.</span>
+            </div>
+          </div>
+        </div>
+        <div className="vol-examples">
+          <div className="vol-ex-label">Ejemplos de variables con distinta volatilidad</div>
+          <div className="vol-ex-grid">
+            {ejemplos.map(([icon, name, desc]) => (
+              <div className="vol-ex-card" key={name}>
+                <span className="vol-ex-icon">{icon}</span>
+                <strong>{name}</strong>
+                <p>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <PageFoot page="03" />
+    </div>
+  );
+}
+
+function SlideNombre() {
+  const letras = [
+    { letter: "G", word: "Generalized", color: "blue",  exp: "Porque generaliza el modelo ARCH original de Engle (1982), añadiendo rezagos de la propia varianza condicional." },
+    { letter: "A", word: "Autoregressive", color: "amber", exp: "Porque la varianza condicional depende de sus propios valores pasados: la volatilidad de ayer explica la de hoy." },
+    { letter: "R", word: "—", color: "", exp: "" },
+    { letter: "C", word: "Conditional", color: "green", exp: "Porque la varianza se calcula condicionada a la información disponible hasta el período anterior (filtración Ωₜ₋₁)." },
+    { letter: "H", word: "Heteroskedasticity", color: "blue", exp: "Porque la varianza cambia con el tiempo: no es constante (homocedasticidad) sino variable (heterocedasticidad)." },
+  ].filter(l => l.word !== "—");
+
+  const problemas = [
+    ["01", "Homocedasticidad supuesta", "Los modelos clásicos (MCO, ARIMA) asumen que todos los errores tienen la misma varianza, lo que raramente se cumple."],
+    ["02", "Períodos de alta incertidumbre", "Los mercados presentan: períodos tranquilos, períodos de crisis, cambios repentinos y alta incertidumbre."],
+    ["03", "Varianza cambiante", "Como consecuencia de lo anterior, la varianza cambia continuamente. GARCH fue creado precisamente para modelar esa variabilidad."],
+  ];
+
+  return (
+    <div className="slide">
+      <Eyebrow n="04">INTRODUCCIÓN</Eyebrow>
+      <h2 className="title">¿Por qué se llama GARCH? — El acrónimo</h2>
+      <div className="slide-body layout-nombre">
+        <div className="garch-acronym-grid">
+          {letras.map((l) => (
+            <div className={`garch-letter-card garch-${l.color}`} key={l.letter}>
+              <div className="garch-big-letter">{l.letter}</div>
+              <div className="garch-word">{l.word}</div>
+              <p className="garch-exp">{l.exp}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="het-block">
+          <div className="het-label">Heterocedasticidad — el fenómeno que GARCH modela</div>
+          <div className="card-grid cols-3 compact">
+            {problemas.map(([n, t, b]) => <Card key={n} n={n} title={t}>{b}</Card>)}
+          </div>
+        </div>
+      </div>
+      <PageFoot page="04" />
+    </div>
+  );
+}
+
 function SlideMotivacion() {
+
   return (
     <div className="slide">
       <Eyebrow n="01">MOTIVACIÓN</Eyebrow>
@@ -277,10 +462,11 @@ function SlideGARCH11() {
 
 function SlideTeoria() {
   const props = [
-    ["01", "Estacionariedad", "Σαᵢ + Σβⱼ < 1 garantiza varianza incondicional estable."],
-    ["02", "Persistencia", "α₁ + β₁ mide cuánto tarda en disiparse un choque."],
-    ["03", "Colas pesadas", "La mezcla de varianzas cambiantes genera leptocurtosis."],
-    ["04", "ARMA en y²ₜ", "La ACF/PACF de cuadrados ayuda a elegir p y q."],
+    ["01", "Estacionariedad", "Σαᵢ + Σβⱼ < 1 garantiza varianza incondicional estable. Si no se cumple, la volatilidad no regresa a un nivel fijo."],
+    ["02", "Persistencia", "α₁ + β₁ mide cuánto tarda en disiparse un choque de volatilidad. Valores cercanos a 1 indican alta persistencia."],
+    ["03", "Colas pesadas (leptocurtosis)", "La mezcla de varianzas cambiantes genera más eventos extremos que la distribución normal, capturando la leptocurtosis observada."],
+    ["04", "Reversión a la media", "La varianza incondicional de largo plazo es σ̄² = ω / (1 − Σαᵢ − Σβⱼ). La volatilidad fluctúa pero regresa a ese nivel."],
+    ["05", "Representación ARMA", "y²ₜ sigue un proceso ARMA(max(p,q), p). La ACF/PACF de los cuadrados de los residuos ayuda a seleccionar el orden p y q."],
   ];
   return (
     <div className="slide">
@@ -288,10 +474,10 @@ function SlideTeoria() {
       <h2 className="title">Propiedades estadísticas del proceso GARCH</h2>
       <div className="slide-body layout-theory">
         <div className="theory-hero">
-          <div className="theory-label">Condición central</div>
+          <div className="theory-label">Condición de estacionariedad</div>
           <div className="theory-formula">Σαᵢ + Σβⱼ &lt; 1</div>
-          <p>Si se cumple, la volatilidad fluctúa pero regresa a un nivel de largo plazo.</p>
-          <div className="theory-mini-eq">σ² = ω / (1 − Σαᵢ − Σβⱼ)</div>
+          <p>Si se cumple, la volatilidad fluctúa pero regresa a un nivel de largo plazo estable.</p>
+          <div className="theory-mini-eq">σ̄² = ω / (1 − Σαᵢ − Σβⱼ)</div>
         </div>
 
         <div className="theory-list">
@@ -307,12 +493,186 @@ function SlideTeoria() {
         </div>
 
         <div className="persistence-strip">
-          <span>Calma</span>
+          <span>Estacionario (α+β &lt; 1)</span>
           <div className="persistence-bar"><i /></div>
-          <span>IGARCH: choques permanentes</span>
+          <span>IGARCH: choques permanentes (α+β = 1)</span>
         </div>
       </div>
       <PageFoot page="06" />
+    </div>
+  );
+}
+
+function SlideFormulas() {
+  return (
+    <div className="slide">
+      <Eyebrow n="07">TEORÍA</Eyebrow>
+      <h2 className="title">Fórmulas del modelo GARCH y sus parámetros</h2>
+      <div className="slide-body layout-model">
+        <p className="lede">El modelo GARCH(1,1) se especifica mediante tres ecuaciones relacionadas entre sí. Cada componente cumple un rol distinto en la captura de la dinámica de la volatilidad.</p>
+
+        <div className="formulas-stack">
+          <div className="formula-row">
+            <div className="formula-tag tone-blue">Media</div>
+            <div className="formula-content">
+              <div className="eq-main">rₜ = μ + εₜ</div>
+              <p>El retorno en el período t es igual a la media condicional μ más un término de error εₜ.</p>
+            </div>
+          </div>
+          <div className="formula-row">
+            <div className="formula-tag tone-amber">Error</div>
+            <div className="formula-content">
+              <div className="eq-main">εₜ = σₜ zₜ ,&nbsp;&nbsp; zₜ ~ i.i.d. N(0, 1)</div>
+              <p>El error se descompone en la volatilidad condicional σₜ y una innovación estándar zₜ con media cero y varianza uno.</p>
+            </div>
+          </div>
+          <div className="formula-row">
+            <div className="formula-tag tone-green">Varianza</div>
+            <div className="formula-content">
+              <div className="eq-main">σ²ₜ = ω + α ε²ₜ₋₁ + β σ²ₜ₋₁</div>
+              <p>La varianza condicional del período t depende de la constante ω, del choque cuadrático pasado (término ARCH) y de la varianza rezagada (término GARCH).</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card-grid cols-5 compact params-grid">
+          <div className="param-doc-card"><span className="param-sym">ω</span><strong>Nivel base</strong><p>Volatilidad promedio de largo plazo. Debe ser positiva (ω &gt; 0).</p></div>
+          <div className="param-doc-card"><span className="param-sym">α</span><strong>Reacción (ARCH)</strong><p>Efecto de las noticias recientes (ε²ₜ₋₁) sobre la volatilidad. α ≥ 0.</p></div>
+          <div className="param-doc-card"><span className="param-sym">β</span><strong>Persistencia (GARCH)</strong><p>Memoria de la volatilidad pasada (σ²ₜ₋₁). β ≥ 0.</p></div>
+          <div className="param-doc-card"><span className="param-sym">ε²</span><strong>Choque pasado</strong><p>Cuadrado del residuo del período anterior. Representa la "sorpresa" del mercado.</p></div>
+          <div className="param-doc-card"><span className="param-sym">σ²</span><strong>Varianza pasada</strong><p>Varianza condicional del período anterior. Actúa como suavizador de largo plazo.</p></div>
+        </div>
+      </div>
+      <PageFoot page="07" />
+    </div>
+  );
+}
+
+function SlideHipotesis() {
+  const supuestos = [
+    ["01", "Estacionariedad", "La serie de retornos debe ser estacionaria (sin tendencia ni raíz unitaria)."],
+    ["02", "Heterocedasticidad", "Debe existir heterocedasticidad condicional: la varianza no es constante en el tiempo."],
+    ["03", "Errores con media cero", "Los errores εₜ deben tener media condicional igual a cero: E[εₜ | Ωₜ₋₁] = 0."],
+    ["04", "ω > 0", "La constante de la ecuación de varianza debe ser estrictamente positiva para garantizar σ²ₜ > 0."],
+    ["05", "α ≥ 0, β ≥ 0", "Los coeficientes ARCH y GARCH deben ser no negativos para asegurar varianza positiva."],
+    ["06", "α + β < 1", "La suma de parámetros debe ser menor a 1 para garantizar estabilidad (varianza finita de largo plazo)."],
+  ];
+  return (
+    <div className="slide">
+      <Eyebrow n="08">TEORÍA</Eyebrow>
+      <h2 className="title">Hipótesis ARCH-LM y supuestos del modelo</h2>
+      <div className="slide-body layout-hipotesis">
+        <div className="hypothesis-block">
+          <div className="hyp-panel hyp-null">
+            <div className="hyp-badge">H₀</div>
+            <strong>Hipótesis nula</strong>
+            <ul>
+              <li>No existen efectos ARCH en los residuos.</li>
+              <li>La varianza de los errores permanece constante (homocedasticidad).</li>
+            </ul>
+          </div>
+          <div className="hyp-arrow">→</div>
+          <div className="hyp-panel hyp-alt">
+            <div className="hyp-badge">H₁</div>
+            <strong>Hipótesis alternativa</strong>
+            <ul>
+              <li>Sí existen efectos ARCH en los residuos.</li>
+              <li>La varianza cambia con el tiempo (heterocedasticidad condicional).</li>
+            </ul>
+          </div>
+          <div className="hyp-arrow">→</div>
+          <div className="hyp-panel hyp-decision">
+            <div className="hyp-badge">Decisión</div>
+            <strong>Regla de decisión</strong>
+            <ul>
+              <li>Si p-valor &lt; 0.05, se rechaza H₀.</li>
+              <li>Se concluye que existe heterocedasticidad condicional.</li>
+              <li>Procede estimar un modelo GARCH.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="supuestos-label">Supuestos formales del modelo GARCH</div>
+        <div className="card-grid facts compact">
+          {supuestos.map(([n, title, body]) => (
+            <Card key={n} n={n} title={title}>{body}</Card>
+          ))}
+        </div>
+        <p className="pull-quote">Estos supuestos aseguran que el modelo sea matemáticamente válido y que las estimaciones sean estadísticamente confiables.</p>
+      </div>
+      <PageFoot page="08" />
+    </div>
+  );
+}
+
+function SlideInterpretacion() {
+  const cases = [
+    { label: "α alto", color: "amber", icon: "⚡", title: "Alta reactividad", body: "La volatilidad responde de forma rápida e intensa a las noticias recientes del mercado. Un choque hoy provoca un salto inmediato en la volatilidad de mañana.", example: "Mercados en crisis, activos especulativos." },
+    { label: "β alto", color: "blue",  icon: "🔁", title: "Alta persistencia", body: "La volatilidad permanece elevada durante muchos períodos después de un choque. Una crisis puede afectar la varianza condicional durante semanas o meses.", example: "Índices bursátiles, tasas de cambio." },
+    { label: "α + β ≈ 1", color: "red", icon: "♾️", title: "Volatilidad integrada (IGARCH)", body: "La volatilidad es altamente persistente y los choques tardan extremadamente en disiparse. Si α + β = 1 exactamente, la varianza incondicional es infinita.", example: "Proceso cerca de raíz unitaria en varianza." },
+    { label: "α + β < 1", color: "green", icon: "✓", title: "Proceso estacionario", body: "El modelo es covarianza-estacionario. La volatilidad fluctúa alrededor de una media de largo plazo σ̄² = ω / (1 − α − β) a la cual regresa.", example: "Requisito para estimación e inferencia válidas." },
+  ];
+  return (
+    <div className="slide">
+      <Eyebrow n="09">TEORÍA</Eyebrow>
+      <h2 className="title">Interpretación de los parámetros del modelo</h2>
+      <div className="slide-body layout-interp">
+        <p className="lede">La lectura conjunta de α y β determina el perfil de volatilidad: qué tan rápido reacciona a noticias y qué tan largo es su efecto en el tiempo.</p>
+        <div className="interp-grid">
+          {cases.map((c) => (
+            <div className={`interp-card tone-${c.color}`} key={c.label}>
+              <div className="interp-icon">{c.icon}</div>
+              <div className="interp-label">{c.label}</div>
+              <strong>{c.title}</strong>
+              <p>{c.body}</p>
+              <em>{c.example}</em>
+            </div>
+          ))}
+        </div>
+        <div className="interp-summary">
+          <div className="interp-row"><span className="interp-param">α pequeño, β grande</span><span>→ volatilidad lenta en reaccionar pero muy persistente</span></div>
+          <div className="interp-row"><span className="interp-param">α grande, β pequeño</span><span>→ volatilidad reactiva pero de corta memoria</span></div>
+          <div className="interp-row"><span className="interp-param">α + β cercano a 1</span><span>→ mercados financieros típicos: alta persistencia de riesgo</span></div>
+        </div>
+      </div>
+      <PageFoot page="09" />
+    </div>
+  );
+}
+
+function SlideDistribuciones() {
+  const dists = [
+    { name: "Normal N(0,1)", sym: "𝒩", tone: "blue", pros: "Fácil de implementar. Estimación por MV estándar (QML consistente).", cons: "Subestima la probabilidad de eventos extremos (colas delgadas).", uso: "Series sin fat-tails pronunciados o como primera aproximación." },
+    { name: "t de Student", sym: "𝓣", tone: "amber", pros: "Colas más pesadas. Captura mejor los eventos raros e intensos.", cons: "Requiere estimar un parámetro extra (grados de libertad ν).", uso: "Retornos financieros con leptocurtosis moderada o alta." },
+    { name: "GED (Gen. Error Dist.)", sym: "𝒢", tone: "green", pros: "Flexible: incluye normal (ν=2) y Laplace (ν=1) como casos especiales.", cons: "Menos común; interpretación del parámetro de forma menos intuitiva.", uso: "Distribuciones con forma de cola distinta a la t-Student." },
+  ];
+  return (
+    <div className="slide">
+      <Eyebrow n="10">TEORÍA</Eyebrow>
+      <h2 className="title">Distribuciones de los errores estandarizados</h2>
+      <div className="slide-body layout-dists">
+        <p className="lede">La elección de la distribución de zₜ afecta la función de log-verosimilitud y la capacidad del modelo para capturar eventos extremos.</p>
+
+        <Eq note="El supuesto base del GARCH es innovaciones i.i.d. con media cero y varianza unitaria">
+          <div>εₜ = σₜ zₜ</div>
+          <div className="eq-main">zₜ ~ i.i.d. D(0, 1)</div>
+        </Eq>
+
+        <div className="dist-grid">
+          {dists.map((d) => (
+            <div className={`dist-card tone-${d.tone}`} key={d.name}>
+              <div className="dist-sym">{d.sym}</div>
+              <div className="dist-name">{d.name}</div>
+              <div className="dist-row"><span className="dist-lbl">Ventaja</span><p>{d.pros}</p></div>
+              <div className="dist-row"><span className="dist-lbl">Limitación</span><p>{d.cons}</p></div>
+              <div className="dist-row"><span className="dist-lbl">Uso</span><p>{d.uso}</p></div>
+            </div>
+          ))}
+        </div>
+
+        <p className="pull-quote">Cuando existen datos extremos frecuentes, la t-Student o la GED representan mejor los eventos poco frecuentes pero muy intensos.</p>
+      </div>
+      <PageFoot page="10" />
     </div>
   );
 }
@@ -359,7 +719,7 @@ function SlideMetodologia() {
           </div>
         </div>
       </div>
-      <PageFoot page="07" />
+      <PageFoot page="11" />
     </div>
   );
 }
@@ -389,7 +749,7 @@ function SlideAplicaciones() {
           ))}
         </div>
       </div>
-      <PageFoot page="08" />
+      <PageFoot page="12" />
     </div>
   );
 }
@@ -668,7 +1028,7 @@ function SlideBalance() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="09">BALANCE</Eyebrow>
+      <Eyebrow n="13">BALANCE</Eyebrow>
       <h2 className="title">Ventajas y limitaciones</h2>
       <div className="slide-body layout-balance">
         <div className="balance-grid">
@@ -686,14 +1046,15 @@ function SlideBalance() {
           <span>GARCH es potente para capturar persistencia y agrupamiento de volatilidad, pero requiere diagnóstico y extensiones cuando hay asimetrías o choques externos.</span>
         </div>
       </div>
-      <PageFoot page="09" />
+      <PageFoot page="13" />
     </div>
   );
 }
 
 const SLIDES = [
   SlideMotivacion, SlideRegularidades, SlideARCH, SlideGARCH,
-  SlideGARCH11, SlideTeoria, SlideMetodologia, SlideAplicaciones, SlideBalance,
+  SlideGARCH11, SlideTeoria, SlideFormulas, SlideHipotesis, SlideInterpretacion, SlideDistribuciones,
+  SlideMetodologia, SlideAplicaciones, SlideBalance,
 ];
 const TOTAL = SLIDES.length;
 
@@ -1464,6 +1825,211 @@ const CSS = `
   background: linear-gradient(90deg, var(--blue), var(--amber), var(--rose));
   border-radius: inherit;
 }
+
+/* ---- formulas slide ---- */
+.formulas-stack { display: flex; flex-direction: column; gap: 10px; margin: 8px 0; }
+.formula-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 14px;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.formula-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-weight: 700;
+}
+.formula-tag.tone-blue  { background: var(--blue-soft);  color: var(--blue);  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent); }
+.formula-tag.tone-amber { background: var(--amber-soft); color: var(--amber); border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent); }
+.formula-tag.tone-green { background: var(--green-soft); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); }
+.formula-content .eq-main { text-align: left; font-size: clamp(13px, 1.3vw, 15.5px); }
+.formula-content p { margin: 4px 0 0; font-size: 11px; color: var(--ink-dim); line-height: 1.45; }
+.params-grid { margin-top: 12px; }
+.param-doc-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  text-align: center;
+}
+.param-sym {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(22px, 2.6vw, 30px);
+  line-height: 1;
+  color: var(--amber);
+  font-weight: 700;
+}
+.param-doc-card strong { font-family: 'Fraunces', serif; font-size: 12px; color: var(--ink); }
+.param-doc-card p { margin: 0; font-size: 10.5px; color: var(--ink-dim); line-height: 1.4; }
+
+/* ---- card tone-red / tone-green ---- */
+.card.tone-red .card-title { color: var(--rose); }
+.card.tone-green .card-title { color: var(--green); }
+
+/* ---- hypothesis slide ---- */
+.layout-hipotesis { gap: 14px; }
+.hypothesis-block {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+.hyp-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hyp-panel.hyp-null   { border-color: color-mix(in srgb, var(--blue) 40%, transparent); }
+.hyp-panel.hyp-alt    { border-color: color-mix(in srgb, var(--amber) 40%, transparent); }
+.hyp-panel.hyp-decision { border-color: color-mix(in srgb, var(--green) 40%, transparent); }
+.hyp-badge {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--amber);
+  line-height: 1;
+}
+.hyp-panel.hyp-null .hyp-badge    { color: var(--blue); }
+.hyp-panel.hyp-alt .hyp-badge     { color: var(--amber); }
+.hyp-panel.hyp-decision .hyp-badge { color: var(--green); }
+.hyp-panel strong { font-family: 'Fraunces', serif; font-size: 13px; }
+.hyp-panel ul { margin: 0; padding-left: 16px; }
+.hyp-panel ul li { font-size: 11.5px; color: var(--ink-dim); line-height: 1.5; margin-bottom: 4px; }
+.hyp-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  color: var(--ink-faint);
+  padding: 0 4px;
+}
+.supuestos-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ---- interpretation slide ---- */
+.layout-interp { gap: 14px; }
+.interp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.interp-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.interp-card.tone-amber { border-color: color-mix(in srgb, var(--amber) 35%, transparent); }
+.interp-card.tone-blue  { border-color: color-mix(in srgb, var(--blue)  35%, transparent); }
+.interp-card.tone-red   { border-color: color-mix(in srgb, var(--rose)  35%, transparent); }
+.interp-card.tone-green { border-color: color-mix(in srgb, var(--green) 35%, transparent); }
+.interp-icon { font-size: 22px; line-height: 1; }
+.interp-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--amber);
+  font-weight: 700;
+}
+.interp-card.tone-blue  .interp-label { color: var(--blue); }
+.interp-card.tone-red   .interp-label { color: var(--rose); }
+.interp-card.tone-green .interp-label { color: var(--green); }
+.interp-card strong { font-family: 'Fraunces', serif; font-size: 13px; }
+.interp-card p { margin: 0; font-size: 11px; color: var(--ink-dim); line-height: 1.45; }
+.interp-card em { font-size: 10.5px; color: var(--ink-faint); font-style: italic; margin-top: auto; }
+.interp-summary {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.interp-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 12px;
+}
+.interp-param {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--amber);
+}
+
+/* ---- distributions slide ---- */
+.layout-dists { gap: 14px; }
+.dist-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 4px 0;
+}
+.dist-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dist-card.tone-blue  { border-color: color-mix(in srgb, var(--blue)  35%, transparent); }
+.dist-card.tone-amber { border-color: color-mix(in srgb, var(--amber) 35%, transparent); }
+.dist-card.tone-green { border-color: color-mix(in srgb, var(--green) 35%, transparent); }
+.dist-sym {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--blue);
+}
+.dist-card.tone-amber .dist-sym { color: var(--amber); }
+.dist-card.tone-green .dist-sym { color: var(--green); }
+.dist-name {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.dist-row { display: flex; flex-direction: column; gap: 3px; }
+.dist-lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.dist-row p { margin: 0; font-size: 11px; color: var(--ink-dim); line-height: 1.45; }
+
+
 
 /* ---- equations ---- */
 .eq-block { background: linear-gradient(135deg, var(--surface-2), color-mix(in srgb, var(--blue-soft) 42%, var(--surface-2))); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
