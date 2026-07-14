@@ -162,35 +162,46 @@ function SlideQueEs() {
     <div className="slide">
       <Eyebrow n="01">INTRODUCCIÓN</Eyebrow>
       <h2 className="title">¿Qué es el modelo GARCH?</h2>
-      <div className="slide-body layout-que-es">
-        <div className="que-es-hero">
-          <div className="acronym-full">
-            <span className="acronym-word">Generalized</span>
-            <span className="acronym-sep"> · </span>
-            <span className="acronym-word">Autoregressive</span>
-            <span className="acronym-sep"> · </span>
-            <span className="acronym-word">Conditional</span>
-            <span className="acronym-sep"> · </span>
-            <span className="acronym-word">Heteroskedasticity</span>
+      <div className="slide-body layout-nombre-clean">
+        <div className="acronym-table">
+          <div className="acronym-row">
+            <div className="acronym-letter">G</div>
+            <div className="acronym-term">Generalized</div>
+            <div className="acronym-def">Generaliza el modelo ARCH incorporando los rezagos de la propia varianza condicional para mayor parsimonia.</div>
           </div>
-          <p className="que-es-def">El modelo GARCH es una especificación econométrica diseñada para modelar y predecir la varianza de series temporales cuyos residuos presentan volatilidad agrupada o cambiante.</p>
-          <div className="que-es-contrast">
-            <div className="contrast-block contrast-no">
-              <div className="contrast-lbl">Regresión clásica</div>
-              <p>Supone homocedasticidad: la varianza de los errores permanece constante a lo largo de toda la muestra.</p>
-            </div>
-            <div className="contrast-arrow">→</div>
-            <div className="contrast-block contrast-si">
-              <div className="contrast-lbl">Modelo GARCH</div>
-              <p>Reconoce que existen periodos de calma y de estrés. Estima la varianza condicional futura de manera dinámica.</p>
-            </div>
+          <div className="acronym-row">
+            <div className="acronym-letter">AR</div>
+            <div className="acronym-term">Autoregressive</div>
+            <div className="acronym-def">Los valores de volatilidad actuales dependen y se retroalimentan de sus propios valores históricos pasados.</div>
+          </div>
+          <div className="acronym-row">
+            <div className="acronym-letter">C</div>
+            <div className="acronym-term">Conditional</div>
+            <div className="acronym-def">La estimación del riesgo futuro depende directamente de la información y choques acumulados del periodo anterior.</div>
+          </div>
+          <div className="acronym-row">
+            <div className="acronym-letter">H</div>
+            <div className="acronym-term">Heteroskedasticity</div>
+            <div className="acronym-def">Reconoce formalmente que la volatilidad y la varianza de los errores no son constantes y cambian en el tiempo.</div>
           </div>
         </div>
 
-        <div className="card-grid cols-3 compact">
-          <Card n="01" title="Ámbito de aplicación" tone="blue">Modelado de series de tiempo financieras, macroeconómicas o cambiarias con varianza no constante.</Card>
-          <Card n="02" title="Función principal">Capturar la heterocedasticidad condicional: la variabilidad actual depende de shocks pasados.</Card>
-          <Card n="03" title="Utilidad práctica" tone="amber">Cálculo de riesgo dinámico (VaR), optimización de carteras y valoración de opciones financieras.</Card>
+        <div className="het-section-clean">
+          <div className="section-label">Comparación del Supuesto de Varianza</div>
+          <div className="problems-grid">
+            <div className="problem-card">
+              <strong>Regresión Clásica (Homocedasticidad)</strong>
+              <p>Asume que la varianza de los errores es totalmente constante. Ignora la agrupación de volatilidad extrema en periodos de crisis.</p>
+            </div>
+            <div className="problem-card">
+              <strong>Modelo GARCH (Heterocedasticidad)</strong>
+              <p>Permite que el riesgo varíe dinámicamente según sorpresas del mercado recientes y la persistencia de la volatilidad histórica.</p>
+            </div>
+            <div className="problem-card">
+              <strong>Utilidad Práctica Principal</strong>
+              <p>Modelado del riesgo cambiario, cálculo dinámico de Valor en Riesgo (VaR), optimización de portafolios y valoración de derivados.</p>
+            </div>
+          </div>
         </div>
       </div>
       <PageFoot page="01" />
@@ -249,31 +260,10 @@ function SlideVolatilidad() {
       <h2 className="title">¿Qué es la volatilidad?</h2>
       <div className="slide-body layout-volatilidad-clean">
         <div className="vol-definition">
-          <div className="vol-def-text">
-            <p>La volatilidad representa el grado de variación o dispersión de una serie temporal respecto a su media en un periodo determinado.</p>
-            <div className="vol-levels">
-              <div className="vol-level vol-low">
-                <div className="vol-level-bar" />
-                <div>
-                  <strong>Baja volatilidad</strong>
-                  <p>La variable cambia muy poco entre periodos; comportamiento estable y predecible.</p>
-                </div>
-              </div>
-              <div className="vol-level vol-high">
-                <div className="vol-level-bar" />
-                <div>
-                  <strong>Alta volatilidad</strong>
-                  <p>La variable presenta cambios bruscos y frecuentes; incertidumbre y riesgo elevado.</p>
-                </div>
-              </div>
-            </div>
-            <div className="vol-conclusion">
-              <span>La volatilidad es importante porque permite medir y cuantificar el riesgo de los activos.</span>
-            </div>
-          </div>
+          <p>La volatilidad representa el grado de variación o dispersión de una serie temporal respecto a su media en un periodo determinado. Es una medida clave para cuantificar el riesgo financiero: una baja volatilidad indica un comportamiento estable y predecible, mientras que una alta volatilidad denota incertidumbre y riesgo elevado.</p>
         </div>
         <div className="vol-examples">
-          <div className="vol-ex-label">Ejemplos de variables con distinta volatilidad</div>
+          <div className="vol-ex-label" style={{ fontFamily: "IBM Plex Mono", fontSize: "10.5px", color: "var(--amber)", textTransform: "uppercase", marginBottom: "6px" }}>Ejemplos de variables con distinta volatilidad</div>
           <div className="vol-ex-grid-clean">
             {ejemplos.map((e, idx) => (
               <div className="vol-item-clean" key={idx}>
@@ -1173,13 +1163,13 @@ function ExcelGarchLab({ onClose }) {
                 <span className="card-label">PASO 1 · PESTAÑA 'DATOS'</span>
                 <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Retornos y Datos Históricos</h3>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
-                  El primer paso consiste en transformar el índice de precios bursátiles base ($P_t$) en retornos logarítmicos continuos ($r_t$), lo que estabiliza la varianza.
+                  El primer paso consiste en transformar el índice de precios bursátiles base (Pₜ) en retornos logarítmicos continuos (rₜ), lo que estabiliza la varianza.
                 </p>
                 <div style={{ background: "var(--surface-3)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border)", fontFamily: "IBM Plex Mono", fontSize: "10.5px", margin: "4px 0", textAlign: "center" }}>
-                  {"r_t = ln(P_t / P_t-1)"}
+                  {"rₜ = ln(Pₜ / Pₜ₋₁)"}
                 </div>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
-                  Contiene $n = 100$ observaciones diarias desde febrero a julio del 2026. Los retornos muestran fluctuaciones variables a lo largo del tiempo, con períodos alternos de calma y turbulencia.
+                  Contiene n = 100 observaciones diarias desde febrero a julio del 2026. Los retornos muestran fluctuaciones variables a lo largo del tiempo, con períodos alternos de calma y turbulencia.
                 </p>
                 <button
                   className="sub-tab-btn"
@@ -1238,16 +1228,16 @@ function ExcelGarchLab({ onClose }) {
                 <span className="card-label">PASO 3 · PESTAÑA 'GRAFICAS' (VOLATILIDAD)</span>
                 <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Volatilidad Condicional σₜ</h3>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
-                  Con la ecuación recursiva GARCH calculamos la varianza condicional para cada instante $t$:
+                  Con la ecuación recursiva GARCH calculamos la varianza condicional para cada instante t:
                 </p>
                 <div style={{ background: "var(--surface-3)", padding: "8px", borderRadius: "8px", border: "1px solid var(--border)", fontFamily: "IBM Plex Mono", fontSize: "10px", margin: "4px 0", textAlign: "center" }}>
-                  {"σ²_t = ω + α₁·ε²_t-1 + β₁·σ²_t-1"}
+                  {"σ²ₜ = ω + α₁·ε²ₜ₋₁ + β₁·σ²ₜ₋₁"}
                 </div>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
-                  La gráfica a la derecha muestra los retornos reales envueltos por bandas dinámicas de volatilidad a un 95% de confianza ($\pm 1.96 \sigma_t$). 
+                  La gráfica a la derecha muestra los retornos reales envueltos por bandas dinámicas de volatilidad a un 95% de confianza (±1.96 σₜ). 
                 </p>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
-                  Se aprecia claramente el <strong>Volatility Clustering</strong>: en $t = 30$ y $t = 77$, fuertes shocks ensanchan la banda temporalmente, mientras que en otros períodos el riesgo decae lentamente.
+                  Se aprecia claramente el <strong>Volatility Clustering</strong>: en t = 30 y t = 77, fuertes shocks ensanchan la banda temporalmente, mientras que en otros períodos el riesgo decae lentamente.
                 </p>
               </>
             )}
@@ -1257,10 +1247,10 @@ function ExcelGarchLab({ onClose }) {
                 <span className="card-label">PASO 4 · PESTAÑA 'GARCH' (SIMULACIÓN)</span>
                 <h3 style={{ fontSize: "14px", margin: "0", color: "var(--ink)" }}>Retornos Simulados ŷₜ</h3>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
-                  Una de las capacidades clave del GARCH es generar trayectorias artificiales del activo mediante la volatilidad condicional y shocks aleatorios independientes $z_t \sim N(0,1)$:
+                  Una de las capacidades clave del GARCH es generar trayectorias artificiales del activo mediante la volatilidad condicional y shocks aleatorios independientes zₜ ~ N(0,1):
                 </p>
                 <div style={{ background: "var(--surface-3)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border)", fontFamily: "IBM Plex Mono", fontSize: "10.5px", margin: "4px 0", textAlign: "center" }}>
-                  {"ŷ_t = σ_t · z_t"}
+                  {"ŷₜ = σₜ · zₜ"}
                 </div>
                 <p style={{ fontSize: "11px", color: "var(--ink-dim)", lineHeight: "1.45" }}>
                   <strong>Ajuste dinámico (Cita del Excel):</strong> <em>"La línea azul muestra los retornos reales y la roja los simulados por GARCH. Ambos tienen una magnitud similar... no se busca predecir el movimiento exacto, sino la escala de volatilidad."</em>
@@ -1287,7 +1277,7 @@ function ExcelGarchLab({ onClose }) {
             
             {step === 1 && !showTableInStep1 && (
               <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: "6px" }}>
-                <span className="excel-chart-title" style={{ fontSize: "11px" }}>Serie Histórica: Precios de Cierre del Índice ($P_t$)</span>
+                <span className="excel-chart-title" style={{ fontSize: "11px" }}>Serie Histórica: Precios de Cierre del Índice (Pₜ)</span>
                 <div style={{ flex: 1, minHeight: "220px" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={recalculatedVol} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -1944,6 +1934,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-size: 11px;
   color: var(--ink-dim);
   font-weight: 500;
+  margin-bottom: 6px;
+}
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  text-transform: uppercase;
   margin-bottom: 6px;
 }
 .team-strip {
