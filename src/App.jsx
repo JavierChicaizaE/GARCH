@@ -78,30 +78,27 @@ const OUTLINE = [
     { idx: 0,  tag: "01", title: "¿Qué es el modelo GARCH?" },
     { idx: 1,  tag: "02", title: "Historia del modelo" },
     { idx: 2,  tag: "03", title: "¿Qué es la volatilidad?" },
-    { idx: 3,  tag: "04", title: "¿Por qué se llama GARCH?" },
   ]},
   { group: "Fundamentos", items: [
-    { idx: 4,  tag: "05", title: "Motivación" },
-    { idx: 5,  tag: "06", title: "Regularidades empíricas" },
+    { idx: 3,  tag: "04", title: "Motivación" },
   ]},
   { group: "El modelo", items: [
-    { idx: 6,  tag: "07", title: "Modelo ARCH" },
-    { idx: 7,  tag: "08", title: "Modelo GARCH" },
-    { idx: 8,  tag: "09", title: "GARCH(1,1)" },
+    { idx: 4,  tag: "05", title: "Modelo ARCH" },
+    { idx: 5,  tag: "06", title: "GARCH(1,1)" },
   ]},
   { group: "Teoría", items: [
-    { idx: 9,  tag: "10", title: "Propiedades estadísticas" },
-    { idx: 10, tag: "11", title: "Fórmulas y parámetros" },
-    { idx: 11, tag: "12", title: "Hipótesis y supuestos" },
-    { idx: 12, tag: "13", title: "Interpretación" },
-    { idx: 13, tag: "14", title: "Distribuciones" },
+    { idx: 6,  tag: "07", title: "Propiedades estadísticas" },
+    { idx: 7,  tag: "08", title: "Fórmulas y parámetros" },
+    { idx: 8,  tag: "09", title: "Hipótesis y supuestos" },
+    { idx: 9,  tag: "10", title: "Interpretación" },
+    { idx: 10, tag: "11", title: "Distribuciones" },
   ]},
   { group: "Análisis", items: [
-    { idx: 14, tag: "15", title: "Estimación y diagnóstico" },
+    { idx: 11, tag: "12", title: "Estimación y diagnóstico" },
   ]},
   { group: "Aplicación", items: [
-    { idx: 15, tag: "16", title: "Aplicaciones" },
-    { idx: 16, tag: "17", title: "Ventajas y límites" },
+    { idx: 12, tag: "13", title: "Aplicaciones" },
+    { idx: 13, tag: "14", title: "Ventajas y límites" },
   ]},
 ];
 
@@ -282,56 +279,12 @@ function SlideVolatilidad() {
   );
 }
 
-function SlideNombre() {
-  const letras = [
-    { letter: "G", term: "Generalized", definition: "Porque generaliza el modelo ARCH incorporando los rezagos de la propia varianza condicional." },
-    { letter: "A", term: "Autoregressive", definition: "Porque los valores de varianza actuales dependen y se correlacionan con sus propios valores pasados." },
-    { letter: "C", term: "Conditional", definition: "Porque la varianza estimada depende del conjunto de información acumulada hasta el periodo anterior." },
-    { letter: "H", term: "Heteroskedasticity", definition: "Porque la varianza cambia con el tiempo, reconociendo la variabilidad de la serie de datos." }
-  ];
 
-  const problemas = [
-    { title: "Homocedasticidad clásica", desc: "Los modelos tradicionales asumen varianza constante, ignorando la realidad de los mercados." },
-    { title: "Periodos de crisis bursátiles", desc: "Los retornos financieros presentan agrupamientos de alta volatilidad persistente en periodos de estrés." },
-    { title: "Varianza continuamente móvil", desc: "La incertidumbre no es estática; GARCH actualiza el pronóstico de riesgo en base a nuevos shocks." }
-  ];
-
-  return (
-    <div className="slide">
-      <Eyebrow n="04">INTRODUCCIÓN</Eyebrow>
-      <h2 className="title">¿Por qué se llama GARCH? — El acrónimo</h2>
-      <div className="slide-body layout-nombre-clean">
-        <div className="acronym-table">
-          {letras.map((l) => (
-            <div className="acronym-row" key={l.letter}>
-              <div className="acronym-letter">{l.letter}</div>
-              <div className="acronym-term">{l.term}</div>
-              <div className="acronym-def">{l.definition}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="het-section-clean">
-          <div className="section-label">Problemas que resuelve el modelo</div>
-          <div className="problems-grid">
-            {problemas.map((p, i) => (
-              <div className="problem-card" key={i}>
-                <strong>{p.title}</strong>
-                <p>{p.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <PageFoot page="04" />
-    </div>
-  );
-}
 
 function SlideMotivacion() {
   return (
     <div className="slide">
-      <Eyebrow n="05">MOTIVACIÓN</Eyebrow>
+      <Eyebrow n="04">MOTIVACIÓN</Eyebrow>
       <h2 className="title">¿Por qué modelar la volatilidad?</h2>
       <div className="slide-body layout-chart">
         <div className="chart-wrap">
@@ -364,36 +317,7 @@ function SlideMotivacion() {
         </div>
         <p className="pull-quote">La volatilidad llega en ráfagas — cambios grandes siguen a cambios grandes.</p>
       </div>
-      <PageFoot page="05" />
-    </div>
-  );
-}
-
-function SlideRegularidades() {
-  const facts = [
-    ["01", "Agrupamiento de volatilidad", "Ráfagas: períodos turbulentos y de calma se alternan y persisten."],
-    ["02", "Autocorrelación en los cuadrados", "Los retornos no se autocorrelacionan, pero sus cuadrados sí, y de forma persistente."],
-    ["03", "Colas pesadas (leptocurtosis)", "Más eventos extremos de los que predice la distribución normal."],
-    ["04", "Efecto apalancamiento", "Las malas noticias aumentan la volatilidad futura más que las buenas."],
-    ["05", "Reversión a la media", "La volatilidad fluctúa pero regresa a un nivel promedio de largo plazo."],
-  ];
-  return (
-    <div className="slide">
-      <Eyebrow n="06">REGULARIDADES EMPÍRICAS</Eyebrow>
-      <h2 className="title">Hechos estilizados de los retornos financieros</h2>
-      <div className="slide-body layout-compact">
-        <p className="lede">Documentados desde Mandelbrot (1963) y Fama (1965); ningún modelo de varianza constante puede capturarlos.</p>
-
-        <div className="card-grid facts">
-          {facts.map(([n, t, b]) => <Card key={n} n={n} title={t}>{b}</Card>)}
-        </div>
-
-        <div className="implication">
-          <span className="implication-label">Implicación</span>
-          <span>Se necesita un modelo donde la varianza sea aleatoria y evolucione condicional al pasado: ARCH / GARCH.</span>
-        </div>
-      </div>
-      <PageFoot page="06" />
+      <PageFoot page="04" />
     </div>
   );
 }
@@ -401,7 +325,7 @@ function SlideRegularidades() {
 function SlideARCH() {
   return (
     <div className="slide">
-      <Eyebrow n="07">EL ANTECEDENTE</Eyebrow>
+      <Eyebrow n="05">EL ANTECEDENTE</Eyebrow>
       <h2 className="title">Modelo ARCH — Engle (1982)</h2>
       <div className="slide-body layout-model">
         <p className="lede">Engle propuso que la varianza condicional de hoy dependa de los choques cuadráticos del pasado. Primera formalización del agrupamiento de volatilidad; Premio Nobel de Economía 2003.</p>
@@ -416,30 +340,7 @@ function SlideARCH() {
           <Card title="Su limitación" tone="amber">Requiere un orden q muy alto (decenas de rezagos) para capturar la persistencia: estimación pesada e inestable. Esto motiva el GARCH.</Card>
         </div>
       </div>
-      <PageFoot page="07" />
-    </div>
-  );
-}
-
-function SlideGARCH() {
-  return (
-    <div className="slide">
-      <Eyebrow n="08">EL MODELO CENTRAL</Eyebrow>
-      <h2 className="title">GARCH(p, q) — Bollerslev (1986)</h2>
-      <div className="slide-body layout-model">
-        <p className="lede">Bollerslev (alumno de Engle) generalizó el ARCH añadiendo rezagos de la propia varianza condicional, igual que un ARMA generaliza a un AR puro.</p>
-
-        <Eq note="q términos ARCH (choques)  +  p términos GARCH (varianzas);  ω > 0, αᵢ ≥ 0, βⱼ ≥ 0">
-          <div className="eq-main">σ²ₜ = ω + Σᵢ αᵢ y²ₜ₋ᵢ + Σⱼ βⱼ σ²ₜ₋ⱼ</div>
-        </Eq>
-
-        <div className="card-grid cols-3 compact">
-          <Card title="Anidamiento">Con βⱼ = 0 se recupera el ARCH(q): el GARCH lo contiene como caso particular.</Card>
-          <Card title="Parsimonia">Un GARCH pequeño equivale a un ARCH(∞): persistencia larga sin decenas de rezagos.</Card>
-          <Card title="Suavizamiento">Las varianzas rezagadas actúan como término suavizador de la volatilidad estimada.</Card>
-        </div>
-      </div>
-      <PageFoot page="08" />
+      <PageFoot page="05" />
     </div>
   );
 }
@@ -447,7 +348,7 @@ function SlideGARCH() {
 function SlideGARCH11() {
   return (
     <div className="slide">
-      <Eyebrow n="09">EL CASO DE REFERENCIA</Eyebrow>
+      <Eyebrow n="06">EL CASO DE REFERENCIA</Eyebrow>
       <h2 className="title">GARCH(1,1)</h2>
       <div className="slide-body layout-model">
         <p className="lede">Tres parámetros bastan para ajustar la mayoría de las series financieras reales.</p>
@@ -464,10 +365,12 @@ function SlideGARCH11() {
 
         <p className="pull-quote">En la práctica: α₁ ≈ 0.05–0.15 y β₁ ≈ 0.80–0.95, con α₁ + β₁ cercano a 1 — la volatilidad es muy persistente.</p>
       </div>
-      <PageFoot page="09" />
+      <PageFoot page="06" />
     </div>
   );
-}function SlideTeoria() {
+}
+
+function SlideTeoria() {
   const props = [
     { n: "01", title: "Estacionariedad en covarianza", body: "La suma de los coeficientes (Σαᵢ + Σβⱼ) debe ser estrictamente menor a 1 para garantizar que la varianza incondicional sea finita." },
     { n: "02", title: "Persistencia del shock", body: "La suma α₁ + β₁ mide la tasa de decaimiento de la volatilidad. Si se aproxima a 1, la volatilidad disipa muy lentamente en el tiempo." },
@@ -477,7 +380,7 @@ function SlideGARCH11() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="10">TEORÍA</Eyebrow>
+      <Eyebrow n="07">TEORÍA</Eyebrow>
       <h2 className="title">Propiedades estadísticas del proceso GARCH</h2>
       <div className="slide-body layout-theory-clean">
         <div className="theory-hero-clean">
@@ -505,7 +408,7 @@ function SlideGARCH11() {
           <span>Modelo IGARCH (Suma = 1)</span>
         </div>
       </div>
-      <PageFoot page="10" />
+      <PageFoot page="07" />
     </div>
   );
 }
@@ -520,7 +423,7 @@ function SlideFormulas() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="11">TEORÍA</Eyebrow>
+      <Eyebrow n="08">TEORÍA</Eyebrow>
       <h2 className="title">Fórmulas del modelo GARCH y sus parámetros</h2>
       <div className="slide-body layout-model">
         <p className="lede">El modelo GARCH(1,1) se especifica mediante tres ecuaciones relacionadas entre sí. Cada componente cumple un rol distinto en la captura de la dinámica de la volatilidad.</p>
@@ -561,7 +464,7 @@ function SlideFormulas() {
           ))}
         </div>
       </div>
-      <PageFoot page="11" />
+      <PageFoot page="08" />
     </div>
   );
 }
@@ -576,7 +479,7 @@ function SlideHipotesis() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="12">TEORÍA</Eyebrow>
+      <Eyebrow n="09">TEORÍA</Eyebrow>
       <h2 className="title">Hipótesis ARCH-LM y supuestos del modelo</h2>
       <div className="slide-body layout-hipotesis-clean">
         <div className="hypothesis-row">
@@ -610,7 +513,7 @@ function SlideHipotesis() {
           ))}
         </div>
       </div>
-      <PageFoot page="12" />
+      <PageFoot page="09" />
     </div>
   );
 }
@@ -624,7 +527,7 @@ function SlideInterpretacion() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="13">TEORÍA</Eyebrow>
+      <Eyebrow n="10">TEORÍA</Eyebrow>
       <h2 className="title">Interpretación de los parámetros del modelo</h2>
       <div className="slide-body layout-interp-clean">
         <p className="lede">La lectura conjunta de α y β determina el perfil de volatilidad: qué tan rápido reacciona a noticias y qué tan largo es su efecto en el tiempo.</p>
@@ -641,7 +544,7 @@ function SlideInterpretacion() {
         <div className="interp-table-summary">
           <div className="table-row-clean">
             <span className="param-comb">α Bajo, β Alto</span>
-            <span>Efecto de suavizado predominante: volatilidad estable con memoria larga ante eventos pasados.</span>
+            <span>Efecto de suavizado predominante: volatilidad stable con memoria larga ante eventos pasados.</span>
           </div>
           <div className="table-row-clean">
             <span className="param-comb">α Alto, β Bajo</span>
@@ -653,7 +556,7 @@ function SlideInterpretacion() {
           </div>
         </div>
       </div>
-      <PageFoot page="13" />
+      <PageFoot page="10" />
     </div>
   );
 }
@@ -666,7 +569,7 @@ function SlideDistribuciones() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="14">TEORÍA</Eyebrow>
+      <Eyebrow n="11">TEORÍA</Eyebrow>
       <h2 className="title">Distribuciones de los errores estandarizados</h2>
       <div className="slide-body layout-dists-clean">
         <p className="lede">Para estimar el modelo mediante verosimilitud, se debe asumir una distribución de probabilidad para el residuo estandarizado.</p>
@@ -692,7 +595,7 @@ function SlideDistribuciones() {
           ))}
         </div>
       </div>
-      <PageFoot page="14" />
+      <PageFoot page="11" />
     </div>
   );
 }
@@ -707,7 +610,7 @@ function SlideMetodologia() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="15">METODOLOGÍA</Eyebrow>
+      <Eyebrow n="12">METODOLOGÍA</Eyebrow>
       <h2 className="title">Estimación y diagnóstico</h2>
       <div className="slide-body layout-method">
         <div className="method-flow">
@@ -740,7 +643,7 @@ function SlideMetodologia() {
           </div>
         </div>
       </div>
-      <PageFoot page="15" />
+      <PageFoot page="12" />
     </div>
   );
 }
@@ -756,7 +659,7 @@ function SlideAplicaciones() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="16">EN LA PRÁCTICA</Eyebrow>
+      <Eyebrow n="13">EN LA PRÁCTICA</Eyebrow>
       <h2 className="title">Aplicaciones del marco GARCH</h2>
       <div className="slide-body layout-apps">
         <p className="lede">GARCH se usa cuando el riesgo cambia en el tiempo y la volatilidad no puede tratarse como una constante.</p>
@@ -770,7 +673,7 @@ function SlideAplicaciones() {
           ))}
         </div>
       </div>
-      <PageFoot page="16" />
+      <PageFoot page="13" />
     </div>
   );
 }
@@ -1049,7 +952,7 @@ function SlideBalance() {
   ];
   return (
     <div className="slide">
-      <Eyebrow n="17">BALANCE</Eyebrow>
+      <Eyebrow n="14">BALANCE</Eyebrow>
       <h2 className="title">Ventajas y limitaciones</h2>
       <div className="slide-body layout-balance">
         <div className="balance-grid">
@@ -1067,7 +970,7 @@ function SlideBalance() {
           <span>GARCH es potente para capturar persistencia y agrupamiento de volatilidad, pero requiere diagnóstico y extensiones cuando hay asimetrías o choques externos.</span>
         </div>
       </div>
-      <PageFoot page="17" />
+      <PageFoot page="14" />
     </div>
   );
 }
@@ -1434,8 +1337,8 @@ function ExcelGarchLab({ onClose }) {
 }
 
 const SLIDES = [
-  SlideQueEs, SlideHistoria, SlideVolatilidad, SlideNombre,
-  SlideMotivacion, SlideRegularidades, SlideARCH, SlideGARCH,
+  SlideQueEs, SlideHistoria, SlideVolatilidad,
+  SlideMotivacion, SlideARCH,
   SlideGARCH11, SlideTeoria, SlideFormulas, SlideHipotesis, SlideInterpretacion, SlideDistribuciones,
   SlideMetodologia, SlideAplicaciones, SlideBalance,
 ];
